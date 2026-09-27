@@ -1,8 +1,10 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { CommandPalette } from './CommandPalette';
 import { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
+import { Play, RotateCcw, BrainCircuit } from 'lucide-react';
+import { useStore } from '../store/useStore';
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/': { title: 'Executive Dashboard', subtitle: 'Real-time platform health and SRE metrics' },
@@ -26,6 +28,45 @@ export const Layout = () => {
   const [timeAgoStr, setTimeAgoStr] = useState<string>('just now');
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const navigate = useNavigate();
+  const { lastDiagnostic, setLastDiagnostic } = useStore();
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [demoScenario, setDemoScenario] = useState('checkout_500');
+  const [toastMsg, setToastMsg] = useState('');
+
+  const handleReset = async () => {
+    setDemoLoading(true);
+    try {
+      await apiClient.post('/demo/reset');
+      setToastMsg('Memory bank reset · 5 incidents seeded');
+      setTimeout(() => setToastMsg(''), 3000);
+    } catch (e) {
+      console.error(e);
+    }
+    setDemoLoading(false);
+  };
+
+  const handleRunDemo = async () => {
+    setDemoLoading(true);
+    try {
+      const res = await apiClient.post('/demo/trigger', { scenario: demoScenario });
+      const data = res.data;
+      if (data && data.root_cause_analysis) {
+        setLastDiagnostic({
+          query: data.query,
+          mode: data.root_cause_analysis.llm_model_used === 'hindsight-semantic-memory' ? 'recall' : 'fresh',
+          durationSeconds: data.root_cause_analysis.analysis_duration_seconds,
+          confidence: data.root_cause_analysis.confidence_score,
+          incidentId: data.root_cause_analysis.incident_id,
+          timestamp: new Date().toISOString()
+        });
+      }
+      navigate('/incidents');
+    } catch (e) {
+      console.error(e);
+    }
+    setDemoLoading(false);
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -93,8 +134,54 @@ export const Layout = () => {
           </div>
         </header>
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-8">
-          <div key={location.pathname} className="animate-[fadeIn_0.15s_ease-out]">
+        <main className="flex-1 overflow-y-auto p-8 relative">
+          
+          {/* Demo Mode Bar */}
+          <div className="absolute top-4 right-8 z-20 flex items-center gap-3 bg-slate-100 rounded-lg p-1.5 border border-slate-200 shadow-sm text-xs">
+            {lastDiagnostic && (
+              <div className="flex items-center gap-1.5 px-3 border-r border-slate-200">
+                <BrainCircuit size={12} className={lastDiagnostic.mode === 'recall' ? 'text-indigo-600' : 'text-slate-500'} />
+                <span className="font-medium text-slate-600">
+                  Last: {lastDiagnostic.mode === 'recall' ? 'RECALL HIT' : 'FRESH'} · {lastDiagnostic.durationSeconds.toFixed(1)}s
+                </span>
+              </div>
+            )}
+            
+            <select 
+              className="bg-white border border-slate-200 rounded px-2 py-1 text-slate-700 outline-none hover:border-indigo-300 transition-colors"
+              value={demoScenario}
+              onChange={e => setDemoScenario(e.target.value)}
+              disabled={demoLoading}
+            >
+              <option value="checkout_500">Checkout 500s</option>
+              <option value="auth_oom">Auth OOM</option>
+              <option value="payment_timeout">Payment Timeout</option>
+            </select>
+            
+            <button 
+              onClick={handleRunDemo}
+              disabled={demoLoading}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded text-slate-700 font-medium transition-colors disabled:opacity-50 border border-slate-200"
+            >
+              <Play size={12} /> {demoLoading ? 'Running...' : 'Run demo'}
+            </button>
+            
+            <button 
+              onClick={handleReset}
+              disabled={demoLoading}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded text-slate-700 font-medium transition-colors disabled:opacity-50 border border-slate-200"
+            >
+              <RotateCcw size={12} /> Reset
+            </button>
+          </div>
+
+          {toastMsg && (
+            <div className="absolute top-16 right-8 z-30 bg-emerald-600 text-white text-xs font-medium px-4 py-2 rounded shadow-lg animate-[fadeIn_0.15s_ease-out]">
+              {toastMsg}
+            </div>
+          )}
+
+          <div key={location.pathname} className="animate-[fadeIn_0.15s_ease-out] mt-6">
             <Outlet />
           </div>
         </main>

@@ -503,6 +503,33 @@ async def proxy_memory_seed_demo():
         logger.error(f"memory_seed_demo_proxy_failed: {e}")
         return JSONResponse({"error": str(e)}, status_code=502)
 
+class DemoTriggerRequestBFF(BaseModel):
+    scenario: str
+
+@app.post("/api/demo/reset")
+async def proxy_demo_reset():
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "http://incident-engine.incident-agent-system.svc.cluster.local/demo/reset"
+            )
+            return resp.json()
+    except Exception as e:
+        logger.error(f"demo_reset_proxy_failed: {e}")
+        return JSONResponse({"error": str(e)}, status_code=502)
+
+@app.post("/api/demo/trigger")
+async def proxy_demo_trigger(request: DemoTriggerRequestBFF):
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                "http://incident-engine.incident-agent-system.svc.cluster.local/demo/trigger",
+                json=request.model_dump()
+            )
+            return resp.json()
+    except Exception as e:
+        logger.error(f"demo_trigger_proxy_failed: {e}")
+        return JSONResponse({"error": str(e)}, status_code=502)
 
 # ============================================================
 # Phase 4c: Audit Export proxies

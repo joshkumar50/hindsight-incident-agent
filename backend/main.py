@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import structlog
 
 # Ensure workspace root directory is in sys.path for native imports
@@ -287,6 +288,41 @@ async def seed_memory_demo():
     import seed_memory
     await seed_memory.seed()
     return {"status": "success", "message": "Demo memories seeded successfully"}
+
+class DemoTriggerRequest(BaseModel):
+    scenario: str
+
+@app.post("/demo/reset")
+async def demo_reset():
+    """Clears fallback cache and re-seeds memory."""
+    hindsight_memory._fallback_cache.clear()
+    import seed_memory
+    await seed_memory.seed()
+    return {"status": "reset", "memories_seeded": len(seed_memory.INCIDENTS)}
+
+@app.post("/demo/trigger", response_model=AnalysisResponse)
+async def demo_trigger(request: DemoTriggerRequest):
+    """Triggers an incident scenario diagnostic."""
+    scenario_map = {
+        "checkout_500": "checkout service returning 500 errors",
+        "auth_oom": "auth-service pods crashing with OOMKilled status",
+        "payment_timeout": "payment-service timeout calling upstream auth after 3s"
+    }
+    query = scenario_map.get(request.scenario, "system is returning 500 errors")
+    target = "unknown-service"
+    if request.scenario == "checkout_500": target = "checkout-service"
+    elif request.scenario == "auth_oom": target = "auth-service"
+    elif request.scenario == "payment_timeout": target = "payment-service"
+    
+    req = AnalysisRequest(
+        query=query,
+        target_service=target,
+        source="demo_trigger"
+    )
+    
+    response = await agent_workflow.run(req)
+    save_analysis(req, response)
+    return response
 
 
 if __name__ == "__main__":
