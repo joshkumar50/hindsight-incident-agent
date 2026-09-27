@@ -52,7 +52,7 @@ async def generate_explanation(request: IncidentReportRequest):
             res = await client.post(
                 GROQ_API_URL,
                 json={
-                    "model": "llama-3.1-8b-instant",
+                    "model": "openai/gpt-oss-20b",
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.2,
                     "response_format": {"type": "json_object"}
