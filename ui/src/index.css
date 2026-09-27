@@ -3,6 +3,7 @@
 
 @theme {
   /* Premium Light Theme (Datadog / Linear inspired) */
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
   --color-bg-primary: #f4f6fa;
   --color-bg-secondary: #ffffff;
   --color-bg-card: #ffffff;
@@ -46,6 +47,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1 { letter-spacing: -0.03em; font-weight: 650; }
+h2 { letter-spacing: -0.02em; font-weight: 600; }
+
+.font-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.font-id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
 /* Premium card utility */
 .premium-card {
   background: #ffffff;
@@ -70,4 +84,31 @@ body {
   transition-property: color, background-color, border-color, opacity, box-shadow, transform;
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@layer components {
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none;
+  }
+  .status-pill-emerald { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-emerald-700 bg-emerald-500/10 border-emerald-500/20; }
+  .status-pill-amber { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-amber-700 bg-amber-500/10 border-amber-500/20; }
+  .status-pill-red { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-red-700 bg-red-500/10 border-red-500/20; }
+  .status-pill-indigo { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-indigo-700 bg-indigo-500/10 border-indigo-500/20; }
+  .status-pill-slate { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-slate-700 bg-slate-500/10 border-slate-500/20; }
+  .status-pill-orange { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-orange-700 bg-orange-500/10 border-orange-500/20; }
+  .status-pill-yellow { @apply inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full border text-[11px] font-medium leading-none text-yellow-700 bg-yellow-500/10 border-yellow-500/20; }
+
+  .status-dot { @apply w-[5px] h-[5px] rounded-full shrink-0; }
+  .status-dot-emerald { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-emerald-500; }
+  .status-dot-amber { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-amber-500; }
+  .status-dot-red { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-red-500; }
+  .status-dot-indigo { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-indigo-500; }
+  .status-dot-slate { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-slate-500; }
+  .status-dot-orange { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-orange-500; }
+  .status-dot-yellow { @apply w-[5px] h-[5px] rounded-full shrink-0 bg-yellow-500; }
 }

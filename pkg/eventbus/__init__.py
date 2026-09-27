@@ -1,1 +1,1 @@
-# Eventbus package
+"""Minimal eventbus initialization."""

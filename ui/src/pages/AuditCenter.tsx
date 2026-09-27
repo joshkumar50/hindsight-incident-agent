@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { ClipboardList, CheckCircle, Download, FileJson, FileText, FileSearch } from 'lucide-react';
+import { ClipboardList, CheckCircle, Download, FileJson, FileText, FileSearch, ChevronDown } from 'lucide-react';
 
 interface AuditLog {
   timestamp: string; event_type: string; incident_id?: string;
@@ -125,17 +125,21 @@ export const AuditCenter = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50">
+              <thead className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 z-10">
+                <tr>
                   {['Timestamp', 'Event Type', 'Incident ID', 'Decision', 'Confidence', 'Approved'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        {h} <ChevronDown size={12} className="text-slate-300" />
+                      </div>
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {data.map((log, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-xs font-mono text-slate-500 whitespace-nowrap">
+                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0">
+                    <td className="px-4 py-3 text-xs font-num text-slate-500 whitespace-nowrap">
                       {log.timestamp ? new Date(log.timestamp).toLocaleString() : '--'}
                     </td>
                     <td className="px-4 py-3">
@@ -143,9 +147,9 @@ export const AuditCenter = () => {
                         {log.event_type || '--'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs font-mono text-slate-600">{log.incident_id || '--'}</td>
+                    <td className="px-4 py-3 text-xs font-id text-slate-600">{log.incident_id || '--'}</td>
                     <td className="px-4 py-3 text-xs text-slate-600">{log.decision || '--'}</td>
-                    <td className="px-4 py-3 text-xs font-medium">
+                    <td className="px-4 py-3 text-xs font-medium font-num">
                       {log.confidence_score != null ? (
                         <span className={`px-1.5 py-0.5 rounded ${
                           log.confidence_score >= 0.9 ? 'text-emerald-700 bg-emerald-50' :

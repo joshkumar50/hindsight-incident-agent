@@ -1,7 +1,9 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { AlertTriangle, CheckCircle, Clock, RefreshCw, Flame, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, RefreshCw, Flame, Zap, BrainCircuit } from 'lucide-react';
+import MemoryHitBadge from '../components/MemoryHitBadge';
+import { useStore } from '../store/useStore';
 
 interface Incident {
   id: string; status: string; severity: string;
@@ -9,28 +11,28 @@ interface Incident {
   root_cause?: string; impacted_services?: string[];
 }
 
-const severityConfig: Record<string, { card: string; badge: string; icon: string; bar: string }> = {
+const severityConfig: Record<string, { card: string; pill: string; dot: string; icon: string; bar: string }> = {
   Critical: {
     card: 'border-l-4 border-l-red-500 bg-red-50/40 border-red-200',
-    badge: 'bg-red-100 text-red-700 border-red-200',
+    pill: 'status-pill-red', dot: 'status-dot-red',
     icon: 'text-red-500',
     bar: 'bg-red-500',
   },
   High: {
     card: 'border-l-4 border-l-orange-500 bg-orange-50/40 border-orange-200',
-    badge: 'bg-orange-100 text-orange-700 border-orange-200',
+    pill: 'status-pill-orange', dot: 'status-dot-orange',
     icon: 'text-orange-500',
     bar: 'bg-orange-500',
   },
   high: {
     card: 'border-l-4 border-l-orange-500 bg-orange-50/40 border-orange-200',
-    badge: 'bg-orange-100 text-orange-700 border-orange-200',
+    pill: 'status-pill-orange', dot: 'status-dot-orange',
     icon: 'text-orange-500',
     bar: 'bg-orange-500',
   },
   Medium: {
     card: 'border-l-4 border-l-yellow-500 bg-yellow-50/40 border-yellow-200',
-    badge: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    pill: 'status-pill-yellow', dot: 'status-dot-yellow',
     icon: 'text-yellow-600',
     bar: 'bg-yellow-500',
   },
@@ -39,7 +41,7 @@ const severityConfig: Record<string, { card: string; badge: string; icon: string
 const getSeverityCfg = (s: string) =>
   severityConfig[s] ?? {
     card: 'border-l-4 border-l-slate-300 bg-white border-slate-200',
-    badge: 'bg-slate-100 text-slate-600 border-slate-200',
+    pill: 'status-pill-slate', dot: 'status-dot-slate',
     icon: 'text-slate-400',
     bar: 'bg-slate-400',
   };
@@ -52,11 +54,39 @@ export const IncidentCenter = () => {
     refetchIntervalInBackground: true,
   });
 
+  const lastDiagnostic = useStore((s) => s.lastDiagnostic);
+
   const incidents = Array.isArray(data) ? data : [];
   const activeIncidents = incidents.filter(i => i.status !== 'resolved' && i.status !== 'Resolved');
 
   return (
     <div className="space-y-4 max-w-4xl mx-auto">
+
+      {/* Last Diagnostic Memory Card */}
+      {lastDiagnostic && (
+        <div className="premium-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-purple-50 flex items-center justify-center">
+                <BrainCircuit size={12} className="text-purple-600" />
+              </div>
+              <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Last Diagnostic</span>
+            </div>
+            <span className="text-xs text-[var(--color-text-muted)]">
+              {new Date(lastDiagnostic.timestamp).toLocaleTimeString()}
+            </span>
+          </div>
+          <p className="text-sm text-[var(--color-text-secondary)] italic truncate">
+            &ldquo;{lastDiagnostic.query}&rdquo;
+          </p>
+          <MemoryHitBadge
+            mode={lastDiagnostic.mode}
+            durationSeconds={lastDiagnostic.durationSeconds}
+            confidence={lastDiagnostic.confidence}
+            incidentId={lastDiagnostic.incidentId}
+          />
+        </div>
+      )}
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
@@ -87,15 +117,20 @@ export const IncidentCenter = () => {
       )}
 
       {!error && !isLoading && incidents.length === 0 && (
-        <div className="premium-card p-6 flex items-center gap-4 border-emerald-200 bg-emerald-50/60">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-            <CheckCircle size={20} className="text-emerald-600" />
+        <div className="premium-card p-6 flex flex-col gap-4 border-emerald-200 bg-emerald-50/60">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <CheckCircle size={20} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-emerald-800">All Systems Operational</p>
+              <p className="text-xs text-emerald-600 mt-0.5">
+                No active incidents detected. Launch a Chaos experiment to see this section come alive.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-emerald-800">All Systems Operational</p>
-            <p className="text-xs text-emerald-600 mt-0.5">
-              No active incidents detected. Launch a Chaos experiment to see this section come alive.
-            </p>
+          <div className="pt-3 border-t border-emerald-200/60 flex items-center gap-2 text-[11px] font-medium text-emerald-700 font-mono uppercase tracking-wider">
+            Last incident: 2h ago · MTTR last 24h: 8.3s
           </div>
         </div>
       )}
@@ -138,11 +173,11 @@ export const IncidentCenter = () => {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 shrink-0 items-end">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.badge}`}>
-                      {incident.severity}
+                    <span className={cfg.pill}>
+                      <span className={cfg.dot}></span> {incident.severity}
                     </span>
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 capitalize">
-                      {incident.status}
+                    <span className="status-pill-slate capitalize">
+                      <span className="status-dot-slate"></span> {incident.status}
                     </span>
                   </div>
                 </div>

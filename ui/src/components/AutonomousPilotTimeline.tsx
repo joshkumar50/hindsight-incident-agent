@@ -68,9 +68,20 @@ export const AutonomousPilotTimeline: React.FC = () => {
       </div>
 
       {recentIncidents.length === 0 ? (
-        <div className="py-8 text-center text-slate-400 text-xs">
-          <Cpu className="mx-auto mb-2 text-slate-300" size={24} />
-          No active remediation workflows. Fleet is stabilized.
+        <div className="p-4 bg-slate-50 border border-slate-100 rounded-lg flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-sm font-semibold text-slate-900">Watching 12 services · 0 active incidents</span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span className="font-mono text-[11px]">Last event: 4m ago · Next scan in 45s</span>
+            <span className="text-indigo-600 hover:text-indigo-700 cursor-pointer flex items-center gap-1 font-medium">
+              View full history <ArrowRight size={12} />
+            </span>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

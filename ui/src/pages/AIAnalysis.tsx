@@ -41,14 +41,14 @@ export const AIAnalysis = () => {
         <div className="space-y-4">
           {data.map((item, idx) => (
             <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md">
-              <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border-b border-amber-100">
-                <Brain size={16} className="text-amber-600" />
+              <div className="flex items-center gap-3 px-5 py-4 bg-white border-b border-slate-100">
+                <Brain size={14} className="text-slate-400" />
                 <div>
-                  <p className="text-sm font-semibold text-slate-900 font-mono">{item.id}</p>
+                  <p className="font-id">{item.id}</p>
                   <p className="text-xs text-slate-500">{item.description}</p>
                 </div>
-                <span className="ml-auto text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
-                  <CheckCircle size={10} /> AI Analyzed
+                <span className="ml-auto status-pill-emerald">
+                  <span className="status-dot-emerald"></span> AI Analyzed
                 </span>
               </div>
               <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">

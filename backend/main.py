@@ -35,7 +35,7 @@ from shared.models import (
     FeedbackRequest,
     HindsightIncidentAgentException
 )
-from shared.database import save_analysis, get_cached_analysis, hindsight_memory
+from shared.database import save_analysis, get_cached_analysis, hindsight_memory, get_all_memories
 from agent.agent_workflow import AgentWorkflow
 
 # ---- Structlog Setup ----
@@ -268,6 +268,25 @@ async def record_feedback(feedback: FeedbackRequest):
         "incident_id": feedback.incident_id,
         "message": f"Runbook feedback '{feedback.verdict}' committed to Hindsight Memory."
     }
+
+
+@app.get("/memory/bank")
+def get_memory_bank():
+    """Returns all retained incidents from the Hindsight memory bank."""
+    memories = get_all_memories()
+    return {
+        "bank_id": hindsight_memory.bank_id,
+        "total_memories": len(memories),
+        "memories": memories
+    }
+
+
+@app.post("/memory/seed-demo")
+async def seed_memory_demo():
+    """Triggers the seeding of realistic past incidents for demo purposes."""
+    import seed_memory
+    await seed_memory.seed()
+    return {"status": "success", "message": "Demo memories seeded successfully"}
 
 
 if __name__ == "__main__":

@@ -101,7 +101,7 @@ class HindsightMemory:
         if client:
             try:
                 def _do_recall():
-                    return client.recall(bank_id=self.bank_id, query=cleaned, top_k=k)
+                    return client.recall(bank_id=self.bank_id, query=cleaned)
 
                 recall_resp = await asyncio.to_thread(_do_recall)
                 results: list[dict] = []
@@ -271,3 +271,6 @@ def get_history(limit: int = 50) -> List[Dict[str, Any]]:
 
 def delete_history_item(request_id: str):
     _fallback_memory.pop(request_id, None)
+
+def get_all_memories() -> List[Dict[str, Any]]:
+    return list(_fallback_memory.values())

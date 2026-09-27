@@ -38,42 +38,34 @@ export const RecoveryCenter = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center">
-                  <TrendingDown size={13} className="text-indigo-600" />
-                </div>
-                <span className="text-xs text-slate-500 font-medium">Experiments</span>
+                <TrendingDown size={14} className="text-slate-400" />
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Experiments</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{data.total_experiments}</p>
+              <p className="text-2xl font-bold text-slate-900 font-num">{data.total_experiments}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center">
-                  <ShieldCheck size={13} className="text-emerald-600" />
-                </div>
-                <span className="text-xs text-slate-500 font-medium">Recoveries</span>
+                <ShieldCheck size={14} className="text-slate-400" />
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Recoveries</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{data.successful_recoveries}</p>
+              <p className="text-2xl font-bold text-slate-900 font-num">{data.successful_recoveries}</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-sky-50 rounded-lg flex items-center justify-center">
-                  <Clock size={13} className="text-sky-600" />
-                </div>
-                <span className="text-xs text-slate-500 font-medium">Avg MTTR</span>
+                <Clock size={14} className="text-slate-400" />
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Avg MTTR</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{(data.average_mttr_seconds || 0).toFixed(1)}s</p>
+              <p className="text-2xl font-bold text-slate-900 font-num">{(data.average_mttr_seconds || 0).toFixed(1)}s</p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md">
               <div className="flex items-center gap-2 mb-3">
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${activeCount > 0 ? 'bg-red-50' : 'bg-emerald-50'}`}>
-                  <AlertTriangle size={13} className={activeCount > 0 ? 'text-red-600' : 'text-emerald-600'} />
-                </div>
-                <span className="text-xs text-slate-500 font-medium">Active Incidents</span>
+                <AlertTriangle size={14} className="text-slate-400" />
+                <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">Active Incidents</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{activeCount}</p>
+              <p className="text-2xl font-bold text-slate-900 font-num">{activeCount}</p>
             </div>
           </div>
 
@@ -81,7 +73,7 @@ export const RecoveryCenter = () => {
           <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-slate-900">Recovery Success Rate</p>
-              <p className="text-sm font-bold text-emerald-700">{successRate}%</p>
+              <p className="text-sm font-bold text-emerald-700 font-num">{successRate}%</p>
             </div>
             <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
               <div

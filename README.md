@@ -185,7 +185,7 @@ npm run dev
 
 ## 🧠 Hindsight Persistent Memory Integration
 
-This project relies entirely on **Vectorize Hindsight** for persistent memory, eliminating the need for legacy relational databases like MySQL. 
+This project relies entirely on **Vectorize Hindsight** for persistent memory, eliminating the need for legacy relational databases.
 
 ### How the Backend Connects to Hindsight
 The agent uses the official `hindsight-client` SDK (`shared/database.py`) to connect to Hindsight Cloud. 

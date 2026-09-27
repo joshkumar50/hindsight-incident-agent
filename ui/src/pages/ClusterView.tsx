@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { Server, Box, Layers, Cpu, CheckCircle, XCircle } from 'lucide-react';
+import { Server, Box, Layers, Cpu, CheckCircle, XCircle, ChevronDown } from 'lucide-react';
 
 interface Service { name: string; type: string; namespace: string; status: string; }
 interface ClusterData {
@@ -10,16 +10,16 @@ interface ClusterData {
   services: Service[];
 }
 
-const Stat = ({ label, value, icon: Icon, color }: {
-  label: string; value: number; icon: React.ElementType; color: string;
+const Stat = ({ label, value, icon: Icon }: {
+  label: string; value: number; icon: React.ElementType;
 }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4 hover:shadow-md">
-    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-      <Icon size={18} />
+  <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 hover:shadow-md">
+    <div className="flex items-center gap-2">
+      <Icon size={14} className="text-slate-400" />
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
     </div>
     <div>
-      <p className="text-2xl font-bold text-slate-900">{value}</p>
-      <p className="text-xs text-slate-500 font-medium">{label}</p>
+      <p className="text-3xl font-bold text-slate-900 tracking-tight font-num">{value}</p>
     </div>
   </div>
 );
@@ -47,10 +47,10 @@ export const ClusterView = () => {
       {data && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Stat label="Nodes" value={data.total_nodes} icon={Cpu} color="bg-indigo-50 text-indigo-600" />
-            <Stat label="Pods" value={data.total_pods} icon={Box} color="bg-violet-50 text-violet-600" />
-            <Stat label="Namespaces" value={data.namespaces} icon={Layers} color="bg-sky-50 text-sky-600" />
-            <Stat label="Deployments" value={data.deployments} icon={Server} color="bg-emerald-50 text-emerald-600" />
+            <Stat label="Nodes" value={data.total_nodes} icon={Cpu} />
+            <Stat label="Pods" value={data.total_pods} icon={Box} />
+            <Stat label="Namespaces" value={data.namespaces} icon={Layers} />
+            <Stat label="Deployments" value={data.deployments} icon={Server} />
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
@@ -58,28 +58,31 @@ export const ClusterView = () => {
               <h2 className="text-sm font-semibold text-slate-900">Services in incident-agent-system</h2>
             </div>
             <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Service</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Namespace</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Type</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
+              <thead className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 z-10">
+                <tr>
+                  {['Service', 'Namespace', 'Type', 'Status'].map(h => (
+                    <th key={h} className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                      <div className="flex items-center gap-1.5">
+                        {h} <ChevronDown size={12} className="text-slate-300" />
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {data.services?.map((svc, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50">
-                    <td className="px-5 py-3 font-mono text-slate-800 font-medium">{svc.name}</td>
-                    <td className="px-5 py-3 text-slate-500">{svc.namespace}</td>
+                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0">
+                    <td className="px-5 py-3 font-id">{svc.name}</td>
+                    <td className="px-5 py-3 text-slate-500 font-num">{svc.namespace}</td>
                     <td className="px-5 py-3 text-slate-500">{svc.type}</td>
                     <td className="px-5 py-3">
                       {svc.status === 'Running' ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                          <CheckCircle size={10} /> Running
+                        <span className="status-pill-emerald">
+                          <span className="status-dot-emerald"></span> Running
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 px-2 py-0.5 rounded-full">
-                          <XCircle size={10} /> {svc.status}
+                        <span className="status-pill-red">
+                          <span className="status-dot-red"></span> {svc.status}
                         </span>
                       )}
                     </td>

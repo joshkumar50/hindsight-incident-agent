@@ -23,8 +23,7 @@ Before deploying the code, you must provision the following cloud infrastructure
 
 ## 🗄️ 2. Persistent Memory Configuration (Hindsight)
 
-The application uses **Vectorize Hindsight** to store the SRE Prompt Cache and historical analysis logs. 
-When the backend boots up, it automatically initializes the Hindsight memory bank on the cloud.
+The application uses Vectorize Hindsight Cloud (sign up at ui.hindsight.vectorize.io, apply promo MEMHACK99) to store the SRE Prompt Cache and historical analysis logs.
 
 ### Where to define the API keys:
 You must define the credentials securely in Kubernetes using a **Secret**.

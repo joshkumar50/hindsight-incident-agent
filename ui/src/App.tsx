@@ -10,6 +10,7 @@ import { RecoveryCenter } from './pages/RecoveryCenter';
 import { ChaosEngineering } from './pages/ChaosEngineering';
 import { Observability } from './pages/Observability';
 import { AuditCenter } from './pages/AuditCenter';
+import { MemoryBank } from './pages/MemoryBank';
 import { Settings } from './pages/Settings';
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,7 @@ function App() {
             <Route path="/chaos" element={<ChaosEngineering />} />
             <Route path="/observability" element={<Observability />} />
             <Route path="/audit" element={<AuditCenter />} />
+            <Route path="/memory" element={<MemoryBank />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>

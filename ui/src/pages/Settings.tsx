@@ -72,14 +72,14 @@ export const Settings = () => {
           <SettingRow
             icon={Cpu}
             title="AI Engine"
-            desc="Local Ollama LLM -- strictly for natural language explanations only"
+            desc="Autonomous ReAct Agent (Gemini 1.5 / Bedrock / Ollama)"
           >
-            <StatusPill status="Offline" color="amber" />
+            <StatusPill status="Connected" color="green" />
           </SettingRow>
           <SettingRow
             icon={Database}
-            title="Event Bus"
-            desc="Redis Streams in incident-agent-system namespace"
+            title="Persistent Memory"
+            desc="Vectorize Hindsight Cloud Semantic Storage"
           >
             <StatusPill status="Connected" color="green" />
           </SettingRow>

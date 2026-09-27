@@ -477,6 +477,34 @@ async def proxy_feedback(request: Request):
 
 
 # ============================================================
+# Memory Proxy (Phase 5)
+# ============================================================
+@app.get("/api/memory/bank")
+async def proxy_memory_bank():
+    try:
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+            resp = await client.get(
+                "http://incident-engine.incident-agent-system.svc.cluster.local/memory/bank"
+            )
+            return resp.json()
+    except Exception as e:
+        logger.error(f"memory_bank_proxy_failed: {e}")
+        return JSONResponse({"error": str(e)}, status_code=502)
+
+@app.post("/api/memory/seed-demo")
+async def proxy_memory_seed_demo():
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "http://incident-engine.incident-agent-system.svc.cluster.local/memory/seed-demo"
+            )
+            return resp.json()
+    except Exception as e:
+        logger.error(f"memory_seed_demo_proxy_failed: {e}")
+        return JSONResponse({"error": str(e)}, status_code=502)
+
+
+# ============================================================
 # Phase 4c: Audit Export proxies
 # ============================================================
 @app.get("/api/export/csv")
