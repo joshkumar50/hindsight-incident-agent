@@ -1,6 +1,8 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../api/client';
 import { useStore } from '../store/useStore';
-import { Settings as SettingsIcon, Cpu, Database, Radio, Info, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings as SettingsIcon, Cpu, Database, Radio, Info, ToggleLeft, ToggleRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const StatusPill = ({ status, color }: { status: string; color: 'green' | 'amber' | 'red' }) => {
   const map = {
@@ -31,7 +33,43 @@ const SettingRow = ({ icon: Icon, title, desc, children }: {
 );
 
 export const Settings = () => {
-  const { isPollingActive, setPollingActive } = useStore();
+  const { isPollingActive, setPollingActive, lastDiagnostic } = useStore();
+
+  const { data: memData, isError: memError } = useQuery({
+    queryKey: ['settings-memory'],
+    queryFn: () => apiClient.get('/memory/bank').then(r => r.data),
+    refetchInterval: 5000
+  });
+
+  const { isError: backendError } = useQuery({
+    queryKey: ['settings-health'],
+    queryFn: () => apiClient.get('/dashboard').then(r => r.data),
+    refetchInterval: 5000
+  });
+
+  const { isError: k8sError } = useQuery({
+    queryKey: ['settings-k8s'],
+    queryFn: () => apiClient.get('/cluster').then(r => r.data),
+    refetchInterval: 5000
+  });
+
+  const ChecklistItem = ({ label, isHealthy, hint }: { label: string, isHealthy: boolean, hint: string }) => (
+    <div className="flex items-center justify-between py-2 group">
+      <div className="flex items-center gap-2">
+        {isHealthy ? (
+          <CheckCircle2 size={16} className="text-emerald-500" />
+        ) : (
+          <AlertCircle size={16} className="text-red-500" />
+        )}
+        <span className="text-sm text-slate-700">{label}</span>
+      </div>
+      {!isHealthy && (
+        <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+          Fix: {hint}
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
@@ -90,6 +128,41 @@ export const Settings = () => {
           >
             <StatusPill status="Active" color="green" />
           </SettingRow>
+        </div>
+      </div>
+
+      {/* Demo Checklist Panel */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Demo Checklist</h2>
+          <span className="text-xs text-slate-400 font-mono">Pre-flight checks</span>
+        </div>
+        <div className="px-5 py-3">
+          <ChecklistItem 
+            label="Backend /health reachable" 
+            isHealthy={!backendError} 
+            hint="Run .\start.ps1 -SkipBuild to restart port-forwards" 
+          />
+          <ChecklistItem 
+            label="Hindsight memory bank reachable" 
+            isHealthy={!memError} 
+            hint="Check HINDSIGHT_API_KEY and backend logs" 
+          />
+          <ChecklistItem 
+            label={`Memory bank seeded (${memData?.total_memories || 0} items)`} 
+            isHealthy={!memError && memData?.total_memories >= 5} 
+            hint="Click 'Reset' in the top Demo bar" 
+          />
+          <ChecklistItem 
+            label="Kubernetes API reachable" 
+            isHealthy={!k8sError} 
+            hint="Ensure minikube is running and k8s-controller is healthy" 
+          />
+          <ChecklistItem 
+            label={`Last diagnostic mode: ${lastDiagnostic?.mode || 'None'}`} 
+            isHealthy={lastDiagnostic !== null} 
+            hint="Run a demo scenario from the top bar" 
+          />
         </div>
       </div>
     </div>
