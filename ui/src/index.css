@@ -2,17 +2,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Light theme palette */
-  --color-bg-primary: #f8fafc;
+  /* Premium Light Theme (Datadog / Linear inspired) */
+  --color-bg-primary: #f4f6fa;
   --color-bg-secondary: #ffffff;
   --color-bg-card: #ffffff;
-  --color-bg-hover: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  --color-bg-hover: #f0f4ff;
+  --color-border: #e4e9f2;
+  --color-border-strong: #c8d2e6;
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94a3b8;
+  --color-text-primary: #0d1117;
+  --color-text-secondary: #4b5568;
+  --color-text-muted: #9aa3b3;
 
   --color-accent: #4f46e5;
   --color-accent-light: #eef2ff;
@@ -27,8 +27,8 @@
   --color-info: #0284c7;
   --color-info-light: #f0f9ff;
 
-  /* Legacy compat aliases used in existing pages */
-  --color-enterprise-dark: #f8fafc;
+  /* Legacy compat aliases */
+  --color-enterprise-dark: #f4f6fa;
   --color-enterprise-card: #ffffff;
   --color-enterprise-accent: #4f46e5;
   --color-enterprise-danger: #dc2626;
@@ -36,23 +36,38 @@
   --color-enterprise-success: #059669;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Premium card utility */
+.premium-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+.premium-card:hover {
+  box-shadow: 0 4px 12px rgba(79,70,229,0.08), 0 2px 4px rgba(0,0,0,0.06);
+  border-color: var(--color-border-strong);
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar-thumb { background: #c8d2e6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9aa3b3; }
 
 /* Smooth transitions */
-* { transition-property: color, background-color, border-color, opacity, box-shadow, transform; transition-duration: 150ms; transition-timing-function: ease; }
+* {
+  transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

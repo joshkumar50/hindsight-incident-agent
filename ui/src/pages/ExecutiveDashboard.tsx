@@ -17,36 +17,38 @@ interface DashboardData {
 const StatusBadge = ({ status }: { status: string }) => {
   const isHealthy = status === 'Healthy';
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${
-      isHealthy ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border ${
+      isHealthy
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-amber-50 text-amber-700 border-amber-200'
     }`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+      <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
       {status}
     </span>
   );
 };
 
-const KPICard = ({ label, value, sub, icon: Icon, color }: {
+const KPICard = ({ label, value, sub, icon: Icon, color, bgColor }: {
   label: string; value: string | number; sub?: string;
-  icon: React.ElementType; color: string;
+  icon: React.ElementType; color: string; bgColor: string;
 }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 hover:shadow-md hover:border-slate-300">
+  <div className="premium-card p-5 flex flex-col gap-3">
     <div className="flex items-center justify-between">
-      <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</span>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${color}`}>
-        <Icon size={14} />
+      <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{label}</span>
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${bgColor}`}>
+        <Icon size={16} className={color} />
       </div>
     </div>
     <div>
-      <p className="text-2xl font-bold text-slate-900">{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+      <p className="text-3xl font-bold text-[var(--color-text-primary)] tracking-tight">{value}</p>
+      {sub && <p className="text-xs text-[var(--color-text-muted)] mt-1">{sub}</p>}
     </div>
   </div>
 );
 
 const HealthRow = ({ label, status }: { label: string; status: string }) => (
-  <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
-    <span className="text-sm text-slate-700 font-medium">{label}</span>
+  <div className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
+    <span className="text-sm text-[var(--color-text-secondary)] font-medium">{label}</span>
     <StatusBadge status={status} />
   </div>
 );
@@ -67,9 +69,9 @@ export const ExecutiveDashboard = () => {
       {isLoading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 animate-pulse">
+            <div key={i} className="premium-card p-5 animate-pulse">
               <div className="h-3 bg-slate-100 rounded w-2/3 mb-4"></div>
-              <div className="h-7 bg-slate-100 rounded w-1/2"></div>
+              <div className="h-8 bg-slate-100 rounded w-1/2"></div>
             </div>
           ))}
         </div>
@@ -77,9 +79,9 @@ export const ExecutiveDashboard = () => {
 
       {/* Error state */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+        <div className="premium-card border-red-200 bg-red-50 p-4 flex items-center gap-3">
           <AlertTriangle size={16} className="text-red-500 shrink-0" />
-          <p className="text-sm text-red-700">Cannot connect to Dashboard BFF -- check if the service is running.</p>
+          <p className="text-sm text-red-700">Cannot connect to Dashboard BFF — check if the service is running.</p>
         </div>
       )}
 
@@ -92,28 +94,32 @@ export const ExecutiveDashboard = () => {
               value={`${data.system_availability}%`}
               sub="Last 30 days"
               icon={TrendingUp}
-              color="bg-emerald-50 text-emerald-600"
+              color="text-emerald-600"
+              bgColor="bg-emerald-50"
             />
             <KPICard
               label="Mean Time to Recover"
               value={`${data.mttr_seconds}s`}
               sub="Average across all incidents"
               icon={Clock}
-              color="bg-indigo-50 text-indigo-600"
+              color="text-indigo-600"
+              bgColor="bg-indigo-50"
             />
             <KPICard
               label="Active Incidents"
               value={data.active_incidents}
               sub={data.active_incidents === 0 ? 'All clear' : 'Requires attention'}
               icon={AlertTriangle}
-              color={data.active_incidents > 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}
+              color={data.active_incidents > 0 ? 'text-red-600' : 'text-emerald-600'}
+              bgColor={data.active_incidents > 0 ? 'bg-red-50' : 'bg-emerald-50'}
             />
             <KPICard
               label="Recovered"
               value={data.recovered_incidents}
               sub="Autonomous resolutions"
               icon={RefreshCw}
-              color="bg-violet-50 text-violet-600"
+              color="text-violet-600"
+              bgColor="bg-violet-50"
             />
           </div>
 
@@ -123,10 +129,12 @@ export const ExecutiveDashboard = () => {
           {/* Two column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Health Status */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield size={16} className="text-indigo-600" />
-                <h2 className="text-sm font-semibold text-slate-900">Health Status</h2>
+            <div className="premium-card p-5">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                  <Shield size={15} className="text-indigo-600" />
+                </div>
+                <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Health Status</h2>
               </div>
               <HealthRow label="Cluster Health" status={data.cluster_health} />
               <HealthRow label="Application Health" status={data.app_health} />
@@ -134,28 +142,25 @@ export const ExecutiveDashboard = () => {
             </div>
 
             {/* System Pulse */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Activity size={16} className="text-indigo-600" />
-                <h2 className="text-sm font-semibold text-slate-900">Autonomous SRE Activity</h2>
+            <div className="premium-card p-5">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                  <Activity size={15} className="text-indigo-600" />
+                </div>
+                <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">Autonomous SRE Activity</h2>
               </div>
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <CheckCircle size={14} className="text-emerald-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-600">Decision Engine active -- enforcing policy</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle size={14} className="text-emerald-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-600">Anomaly Detector: rolling Z-score scanning</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle size={14} className="text-emerald-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-600">Recovery Validator: closed-loop verification on</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle size={14} className="text-emerald-500 mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-600">AI Copilot: Online -- generating incident summaries</p>
-                </div>
+                {[
+                  'Decision Engine active — enforcing policy',
+                  'Anomaly Detector: rolling Z-score scanning',
+                  'Recovery Validator: closed-loop verification on',
+                  'AI Copilot: Online — generating incident summaries',
+                ].map((msg, i) => (
+                  <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-slate-50/80 border border-[var(--color-border)]">
+                    <CheckCircle size={14} className="text-emerald-500 mt-0.5 shrink-0" />
+                    <p className="text-sm text-[var(--color-text-secondary)]">{msg}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
