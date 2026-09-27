@@ -31,5 +31,7 @@ jobs:
     needs: lint-and-test
     steps:
     - uses: actions/checkout@v3
+    - name: Build Python Base Image
+      run: docker build -t hindsight_agent-python-base:latest -f scripts/Dockerfile.python.base .
     - name: Build Core Image
-      run: docker build -t hindsight_agent-core:latest -f platform/decision-engine/Dockerfile .
+      run: docker build -t hindsight_agent-core:latest --build-arg SERVICE_NAME=decision-engine --build-arg dir=platform/decision-engine -f platform/decision-engine/Dockerfile .
