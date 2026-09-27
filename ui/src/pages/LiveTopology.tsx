@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import {
@@ -7,6 +7,7 @@ import {
   type Node, type Edge, type NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { Card, CardContent } from '@/components/ui/card';
 
 /* ─── Types ─────────────────────────────────────────────── */
 interface TopologyNode { id: string; type: string; label: string; layer?: number; }
@@ -28,27 +29,25 @@ const TYPE_STYLE: Record<string, { bg: string; border: string; label: string; do
 /* ─── Custom node with Handles (required for edges) ─────── */
 const ServiceNode = ({ data }: NodeProps) => {
   const s = TYPE_STYLE[(data as any).nodeType] ?? TYPE_STYLE.service;
-  const isUnhealthy = (data as any).unhealthy === true;
   return (
     <>
-      <Handle type="target" position={Position.Top} style={{ background: isUnhealthy ? '#ef4444' : s.dot, width: 7, height: 7, border: 'none' }} />
+      <Handle type="target" position={Position.Top} style={{ background: s.dot, width: 7, height: 7, border: 'none' }} />
       <div
         style={{
-          background: isUnhealthy ? '#fef2f2' : s.bg,
-          border: `${isUnhealthy ? '2px' : '1.5px'} solid ${isUnhealthy ? '#ef4444' : s.border}`,
+          background: s.bg,
+          border: `1.5px solid ${s.border}`,
           borderRadius: 8,
           padding: '6px 12px',
           minWidth: 110,
           maxWidth: 150,
           textAlign: 'center',
-          boxShadow: isUnhealthy ? '0 0 8px rgba(239,68,68,0.35)' : '0 1px 4px rgba(0,0,0,0.07)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
           userSelect: 'none',
-          animation: isUnhealthy ? 'pulse 1.5s cubic-bezier(0.4,0,0.6,1) infinite' : undefined,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: isUnhealthy ? '#ef4444' : s.dot, flexShrink: 0 }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: isUnhealthy ? '#991b1b' : s.label, fontFamily: 'Inter, sans-serif', lineHeight: 1.2 }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: s.label, fontFamily: 'Inter, sans-serif', lineHeight: 1.2 }}>
             {(data as any).label}
           </span>
         </div>
@@ -56,7 +55,7 @@ const ServiceNode = ({ data }: NodeProps) => {
           {(data as any).nodeType}
         </span>
       </div>
-      <Handle type="source" position={Position.Bottom} style={{ background: isUnhealthy ? '#ef4444' : s.dot, width: 7, height: 7, border: 'none' }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: s.dot, width: 7, height: 7, border: 'none' }} />
     </>
   );
 };
@@ -92,15 +91,14 @@ function computePositions(nodes: TopologyNode[]): Record<string, { x: number; y:
 }
 
 /* ─── Edge style factory ─────────────────────────────────── */
-function makeEdge(e: TopologyEdge, idx: number, unhealthySet: Set<string>): Edge {
-  const isRed = unhealthySet.has(e.source) || unhealthySet.has(e.target);
+function makeEdge(e: TopologyEdge, idx: number): Edge {
   return {
     id: `e-${e.source}-${e.target}-${idx}`,
     source: e.source,
     target: e.target,
-    animated: isRed,
-    style: { stroke: isRed ? '#ef4444' : '#cbd5e1', strokeWidth: isRed ? 2 : 1.5, strokeDasharray: isRed ? '5,3' : undefined },
-    markerEnd: { type: MarkerType.ArrowClosed, color: isRed ? '#ef4444' : '#94a3b8', width: 12, height: 12 },
+    animated: false,
+    style: { stroke: '#cbd5e1', strokeWidth: 1.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: '#94a3b8', width: 12, height: 12 },
   };
 }
 
@@ -116,28 +114,6 @@ const LEGEND = Object.entries(TYPE_STYLE).map(([type, s]) => ({ type, color: s.d
 
 /* ─── Page component ─────────────────────────────────────── */
 export const LiveTopology = () => {
-  const [unhealthyServices, setUnhealthyServices] = useState<Set<string>>(new Set());
-  const esRef = useRef<EventSource | null>(null);
-
-  // Phase 2d: Subscribe to /api/stream/metrics to detect unhealthy services
-  useEffect(() => {
-    let es: EventSource;
-    try {
-      es = new EventSource('/api/stream/metrics');
-      esRef.current = es;
-      es.addEventListener('metrics', (e: MessageEvent) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          const services: Array<{name: string; healthy: boolean}> = parsed?.data?.services ?? [];
-          const newUnhealthy = new Set<string>();
-          services.forEach((svc) => { if (!svc.healthy) newUnhealthy.add(svc.name); });
-          setUnhealthyServices(newUnhealthy);
-        } catch { /* ignore */ }
-      });
-    } catch { /* SSE unavailable */ }
-    return () => { if (esRef.current) esRef.current.close(); };
-  }, []);
-
   const { data, isLoading, error } = useQuery<TopologyData>({
     queryKey: ['topology'],
     queryFn: async () => { const res = await apiClient.get('/topology'); return res.data; },
@@ -153,13 +129,13 @@ export const LiveTopology = () => {
       id: n.id,
       type: 'custom',
       position: positions[n.id] ?? { x: 0, y: 0 },
-      data: { label: n.label, nodeType: n.type, unhealthy: unhealthyServices.has(n.id) },
+      data: { label: n.label, nodeType: n.type },
     }));
 
-    const rfEdges: Edge[] = data.edges.map((e, idx) => makeEdge(e, idx, unhealthyServices));
+    const rfEdges: Edge[] = data.edges.map((e, idx) => makeEdge(e, idx));
 
     return { nodes: rfNodes, edges: rfEdges };
-  }, [data, unhealthyServices]);
+  }, [data]);
 
   return (
     <div className="flex flex-col gap-3" style={{ height: 'calc(100vh - 128px)' }}>
@@ -170,8 +146,8 @@ export const LiveTopology = () => {
         ))}
         {data && (
           <div className="ml-auto flex items-center gap-4">
-            <span className="text-xs text-slate-400">{data.nodes.length} services</span>
-            <span className="text-xs text-slate-400">{data.edges.length} connections</span>
+            <span className="text-xs font-num text-slate-400">{data.nodes.length} services</span>
+            <span className="text-xs font-num text-slate-400">{data.edges.length} connections</span>
             <span className="text-xs text-slate-300">|</span>
             <span className="text-xs text-slate-400">Drag · Scroll to zoom</span>
           </div>
@@ -179,38 +155,40 @@ export const LiveTopology = () => {
       </div>
 
       {/* Canvas */}
-      <div className="flex-1 bg-white border border-slate-200 rounded-xl overflow-hidden">
-        {isLoading && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-sm text-slate-400 animate-pulse">Building topology graph…</p>
-          </div>
-        )}
-        {error && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-sm text-red-500">Failed to load topology -- is dashboard-bff running?</p>
-          </div>
-        )}
-        {nodes.length > 0 && (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{ padding: 0.12 }}
-            minZoom={0.2}
-            maxZoom={2}
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background color="#e2e8f0" gap={24} size={1} />
-            <Controls style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }} />
-            <MiniMap
-              nodeColor={(n) => TYPE_STYLE[(n.data as any).nodeType]?.dot ?? '#94a3b8'}
-              style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}
-              maskColor="rgba(248,250,252,0.7)"
-            />
-          </ReactFlow>
-        )}
-      </div>
+      <Card className="flex-1 overflow-hidden p-0 border-slate-200">
+        <CardContent className="h-full p-0">
+          {isLoading && (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-sm text-slate-400 animate-pulse">Building topology graph…</p>
+            </div>
+          )}
+          {error && (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-sm text-red-500">Failed to load topology -- is dashboard-bff running?</p>
+            </div>
+          )}
+          {nodes.length > 0 && (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ padding: 0.12 }}
+              minZoom={0.2}
+              maxZoom={2}
+              proOptions={{ hideAttribution: true }}
+            >
+              <Background color="#e2e8f0" gap={24} size={1} />
+              <Controls style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8 }} />
+              <MiniMap
+                nodeColor={(n) => TYPE_STYLE[(n.data as any).nodeType]?.dot ?? '#94a3b8'}
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}
+                maskColor="rgba(248,250,252,0.7)"
+              />
+            </ReactFlow>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

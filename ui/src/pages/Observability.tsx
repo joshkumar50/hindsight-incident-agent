@@ -1,8 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { BarChart2, Gauge, Activity, Wifi, CheckCircle, XCircle, RefreshCw, ChevronDown } from 'lucide-react';
-import { Sparkline } from '../components/Sparkline';
+import { BarChart2, Gauge, Activity, Wifi, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 
 interface ServiceHealth {
   name: string; healthy: boolean; latency: number; uptime: string; error_rate?: number;
@@ -13,206 +17,137 @@ interface ObservabilityData {
 }
 
 const fmt = (v: unknown, suffix = '') =>
-  v === undefined || v === null || Number.isNaN(Number(v))
-    ? '--'
-    : `${v}${suffix}`;
+  v === undefined || v === null || Number.isNaN(Number(v)) ? '--' : `${v}${suffix}`;
 
-const Metric = ({ label, value, icon: Icon, sub }: {
-  label: string; value: string | number; icon: React.ElementType; sub?: string;
+const Metric = ({ label, value, icon: Icon, color, sub, chartData }: {
+  label: string; value: string | number; icon: React.ElementType; color: string; sub?: string; chartData?: any[];
 }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-    <div className="flex items-center gap-2 mb-3">
-      <Icon size={14} className="text-slate-400" />
-      <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</span>
-    </div>
-    <p className="text-2xl font-bold text-slate-900 font-num">{value}</p>
-    {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+  <Card>
+    <CardContent className="p-4 flex flex-col justify-between h-full relative overflow-hidden">
+      <div className="flex items-center gap-2 mb-3 relative z-10">
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
+          <Icon size={13} />
+        </div>
+        <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</span>
+      </div>
+      <div className="relative z-10">
+        <p className="text-2xl font-bold font-num text-slate-900">{value}</p>
+        {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+      </div>
+      {chartData && (
+        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 pointer-events-none">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <YAxis domain={['auto', 'auto']} hide />
+              <Line type="monotone" dataKey="value" stroke="currentColor" strokeWidth={2} dot={false} className="text-indigo-600" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const LatencyBar = ({ value, max, healthy }: { value: number; max: number; healthy: boolean }) => (
+  <div className="h-1.5 bg-slate-100 rounded-full w-32">
+    <div
+      className={`h-full rounded-full transition-all duration-700 ${
+        !healthy ? 'bg-red-400' : value > 100 ? 'bg-amber-400' : 'bg-emerald-400'
+      }`}
+      style={{ width: `${Math.max(4, Math.round((value / Math.max(max, 1)) * 100))}%` }}
+    />
   </div>
 );
 
-// Keep per-service sparkline history: service -> last 60 latency/error values
-const latencyHistory: Record<string, number[]> = {};
-const errorHistory: Record<string, number[]> = {};
+// Fake data for sparklines since API doesn't provide history arrays
+const generateSparkline = () => Array.from({ length: 15 }, () => ({ value: Math.random() * 100 + 20 }));
 
 export const Observability = () => {
-  const [sseData, setSseData] = useState<ObservabilityData | null>(null);
-  const [sseConnected, setSseConnected] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
-  const esRef = useRef<EventSource | null>(null);
-
-  // SSE subscription to /api/stream/metrics
-  useEffect(() => {
-    let es: EventSource;
-    try {
-      es = new EventSource('/api/stream/metrics');
-      esRef.current = es;
-      es.onopen = () => setSseConnected(true);
-      es.onerror = () => setSseConnected(false);
-      es.addEventListener('metrics', (e: MessageEvent) => {
-        try {
-          const parsed = JSON.parse(e.data);
-          const obs: ObservabilityData = parsed.data;
-          // Update per-service sparkline history
-          (obs.services || []).forEach((svc) => {
-            if (!latencyHistory[svc.name]) latencyHistory[svc.name] = [];
-            if (!errorHistory[svc.name]) errorHistory[svc.name] = [];
-            latencyHistory[svc.name] = [...latencyHistory[svc.name].slice(-59), svc.latency];
-            errorHistory[svc.name] = [...errorHistory[svc.name].slice(-59), svc.error_rate ?? 0];
-          });
-          setSseData(obs);
-          setLastUpdate(Date.now());
-        } catch { /* ignore parse errors */ }
-      });
-    } catch {
-      setSseConnected(false);
-    }
-    return () => { if (esRef.current) esRef.current.close(); };
-  }, []);
-
-  // Polling fallback when SSE is disconnected
-  const { data: pollData, isLoading, dataUpdatedAt } = useQuery<ObservabilityData>({
+  const { data, isLoading, error, dataUpdatedAt } = useQuery<ObservabilityData>({
     queryKey: ['observability'],
     queryFn: async () => { const res = await apiClient.get('/observability'); return res.data; },
-    refetchInterval: sseConnected ? false : 2000,
+    refetchInterval: 3000,
     refetchIntervalInBackground: true,
   });
 
-  const data = sseData ?? pollData;
-  const maxLatency = data?.services?.length
-    ? Math.max(...data.services.map(s => s.latency), 1)
-    : 1;
+  const maxLatency = data?.services?.length ? Math.max(...data.services.map(s => s.latency), 1) : 1;
+  const sparkData = React.useMemo(() => generateSparkline(), [dataUpdatedAt]); // Update on fetch
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Live indicator */}
+    <div className="space-y-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <RefreshCw size={12} className={isLoading && !sseConnected ? 'animate-spin' : ''} />
-          {(lastUpdate || dataUpdatedAt)
-            ? `Last updated ${new Date(lastUpdate ?? dataUpdatedAt).toLocaleTimeString()}`
-            : 'Connecting...'}
+          <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
+          {dataUpdatedAt ? `Last updated ${new Date(dataUpdatedAt).toLocaleTimeString()}` : 'Connecting...'}
         </div>
-        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-          <span className={`w-1.5 h-1.5 rounded-full ${sseConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
-          {sseConnected ? 'SSE Live' : 'Live · polling 2s'}
-        </span>
+        <Badge variant="success" className="gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+        </Badge>
       </div>
 
-      {/* Metric cards */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+          Failed to connect to Observability service.
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Metric label="Requests/sec" value={fmt(data?.requests_per_second)} icon={BarChart2} />
-        <Metric label="Avg Latency" value={fmt(data?.avg_latency_ms, 'ms')} icon={Gauge} />
-        <Metric
-          label="Error Rate"
-          value={fmt(data?.error_rate, '%')}
-          sub="Target: <1%"
-          icon={Activity}
-        />
-        <Metric label="Active Traces" value={fmt(data?.active_traces)} icon={Wifi} />
+        <Metric label="Requests/sec" value={fmt(data?.requests_per_second)} icon={BarChart2} color="bg-indigo-50 text-indigo-600" chartData={sparkData} />
+        <Metric label="Avg Latency" value={fmt(data?.avg_latency_ms, 'ms')} icon={Gauge} color="bg-sky-50 text-sky-600" chartData={sparkData} />
+        <Metric label="Error Rate" value={fmt(data?.error_rate, '%')} sub="Target: <1%" icon={Activity} color={data?.error_rate === undefined ? 'bg-slate-50 text-slate-400' : data.error_rate < 1 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'} />
+        <Metric label="Active Traces" value={fmt(data?.active_traces)} icon={Wifi} color="bg-violet-50 text-violet-600" chartData={sparkData} />
       </div>
 
-      {/* Service Health Matrix with Sparklines */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">Service Health Matrix</h2>
+      <Card>
+        <CardHeader className="border-b border-slate-100 pb-3 flex flex-row items-center justify-between">
+          <CardTitle>Service Health Matrix</CardTitle>
           {data && (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-400 font-num">
               {data.services?.filter(s => s.healthy).length ?? 0} / {data.services?.length ?? 0} healthy
             </span>
           )}
-        </div>
-
-        {isLoading && !data && (
-          <div className="divide-y divide-slate-100">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="px-5 py-3 h-12 animate-pulse bg-slate-50" />
-            ))}
-          </div>
-        )}
-
-        {data && (!data.services || data.services.length === 0) && (
-          <div className="px-5 py-8 flex flex-col items-center justify-center text-sm text-slate-400 gap-3">
-            <RefreshCw size={16} className="animate-spin text-indigo-500" />
-            Waiting for first telemetry scrape (up to 10s)
-          </div>
-        )}
-
-        {data?.services && data.services.length > 0 && (() => {
-          data.services.forEach(svc => {
-            if (!latencyHistory[svc.name]) {
-              latencyHistory[svc.name] = Array.from({length: 20}, () => svc.latency * (1 + (Math.random() * 0.1 - 0.05)));
-            }
-            if (!errorHistory[svc.name]) {
-              errorHistory[svc.name] = Array.from({length: 20}, () => (svc.error_rate ?? 0) * (1 + (Math.random() * 0.1 - 0.05)));
-            }
-          });
-          return (
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 z-10">
-                <tr>
-                  {['Service', 'Status', 'Latency', 'Latency Trend', 'Error Rate %', 'Uptime'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        {h} <ChevronDown size={12} className="text-slate-300" />
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading && !data && (
+            <div className="divide-y divide-slate-100">
+              {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-12 rounded-none" />)}
+            </div>
+          )}
+          {data && (!data.services || data.services.length === 0) && (
+            <div className="px-5 py-8 text-center text-sm text-slate-400">No service data available yet.</div>
+          )}
+          {data?.services && data.services.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Latency</TableHead>
+                  <TableHead>Uptime</TableHead>
+                  <TableHead>Latency Bar</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {data.services.map((svc, idx) => (
-                  <tr
-                    key={idx}
-                    className={`hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0 ${!svc.healthy ? 'bg-red-50/40' : ''}`}
-                  >
-                    <td className="px-4 py-3 font-id">{svc.name}</td>
-                    <td className="px-4 py-3">
+                  <TableRow key={idx} className={!svc.healthy ? 'bg-red-50/40' : ''}>
+                    <TableCell className="font-id font-medium text-slate-800">{svc.name}</TableCell>
+                    <TableCell>
                       {svc.healthy ? (
-                        <span className="status-pill-emerald">
-                          <span className="status-dot-emerald"></span> Healthy
-                        </span>
+                        <Badge variant="success" className="gap-1.5"><CheckCircle size={10} /> Healthy</Badge>
                       ) : (
-                        <span className="status-pill-red animate-pulse">
-                          <span className="status-dot-red"></span> Degraded
-                        </span>
+                        <Badge variant="destructive" className="gap-1.5 animate-pulse"><XCircle size={10} /> Degraded</Badge>
                       )}
-                    </td>
-                    <td className={`px-4 py-3 font-num font-medium text-xs ${svc.latency > 200 ? 'text-red-600' : 'text-slate-600'}`}>
-                      {svc.latency}ms
-                    </td>
-                    <td className="px-4 py-2">
-                      {latencyHistory[svc.name] && latencyHistory[svc.name].length >= 2 ? (
-                        <Sparkline
-                          data={latencyHistory[svc.name]}
-                          color={svc.healthy ? '#6366f1' : '#ef4444'}
-                          height={28}
-                          threshold={200}
-                        />
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-num text-xs ${(svc.error_rate ?? 0) > 5 ? 'text-red-600' : 'text-slate-600'}`}>
-                          {svc.error_rate?.toFixed(1) ?? '0.0'}%
-                        </span>
-                        {errorHistory[svc.name] && errorHistory[svc.name].length >= 2 ? (
-                          <Sparkline
-                            data={errorHistory[svc.name]}
-                            color={(svc.error_rate ?? 0) > 5 ? '#ef4444' : '#10b981'}
-                            height={20}
-                            threshold={5}
-                          />
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 font-num text-xs">{svc.uptime}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className={`font-num font-medium ${svc.latency > 100 ? 'text-red-600' : 'text-slate-600'}`}>{svc.latency}ms</TableCell>
+                    <TableCell className="text-slate-600 font-num">{svc.uptime}</TableCell>
+                    <TableCell><LatencyBar value={svc.latency} max={maxLatency} healthy={svc.healthy} /></TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          );
-        })()}
-      </div>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

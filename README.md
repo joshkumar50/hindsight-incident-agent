@@ -178,14 +178,18 @@ npm install
 
 # 3. Start Vite dev server (auto-proxies /api to backend)
 npm run dev
-# Frontend runs at http://localhost:3000
+# Frontend runs at http://localhost:5173
+
+> 💡 **Developer Tip:** You do **NOT** need to build the Docker image and roll out the Kubernetes deployment for every UI change!
+> The Vite dev server (`npm run dev`) automatically hot-reloads your changes at `localhost:5173`.
+> You only need to build the Docker image (`minikube docker-env` -> `docker build ...`) and run `kubectl rollout restart deployment/ui` when you want to deploy the final UI to the Kubernetes cluster.
 ```
 
 ---
 
 ## 🧠 Hindsight Persistent Memory Integration
 
-This project relies entirely on **Vectorize Hindsight** for persistent memory, eliminating the need for legacy relational databases.
+This project relies entirely on **Vectorize Hindsight** for persistent memory, eliminating the need for legacy relational databases like MySQL. 
 
 ### How the Backend Connects to Hindsight
 The agent uses the official `hindsight-client` SDK (`shared/database.py`) to connect to Hindsight Cloud. 
@@ -261,108 +265,3 @@ The platform uses **Hindsight by Vectorize** for intelligent semantic memory. In
 - **Retain Phase**: When an incident is solved or human feedback is given, Hindsight Incident Agent commits the learning to Hindsight.
 
 This gives Hindsight Incident Agent the experience of a senior SRE, drastically reducing MTTR for recurring infrastructure patterns.
-
----
-
-## 🔑 Environment Variables (Phase 0–4 Additions)
-
-| Variable | Service | Default | Purpose |
-|---|---|---|---|
-| `HINDSIGHT_API_KEY` | backend | — | **Required.** Vectorize Hindsight SDK authentication |
-| `AUTONOMOUS_MODE` | execution-engine | `assist` | `assist` / `full` / `off` — controls autonomous execution gate |
-| `SLACK_WEBHOOK_URL` | notification-service | — | Incoming Slack webhook for incident alerts |
-| `SLACK_INTERACTIVE_URL` | notification-service | — | Public URL for Slack button callbacks (`POST /slack/interactive`) |
-| `REACT_MAX_SECONDS` | backend | `120` | Wall-clock budget (seconds) for the ReAct reasoning loop |
-| `DEMO_DELAY_SECONDS` | execution-engine | `3` | Delay before applying fix (for live demo pacing) |
-| `GEMINI_API_KEY` | ai-copilot | — | Google Gemini API key for AI explanations and postmortems |
-
----
-
-## 📡 New API Endpoints (Phase 0–4)
-
-### Backend (ReAct Agent — port 8000)
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/query` | Run SRE diagnostic analysis |
-| `POST` | `/feedback` | Submit operator verdict (accept/reject/modify) on AI runbook |
-| `GET`  | `/health` | K8s health probe |
-
-### Dashboard BFF (port varies)
-| Method | Path | Purpose |
-|---|---|---|
-| `GET`  | `/api/stream/pilot` | **SSE** — live pilot lifecycle events (DIAGNOSING→STABILIZED) |
-| `GET`  | `/api/stream/metrics` | **SSE** — live monitoring-engine metrics pushed every 1s |
-| `GET`  | `/api/metrics/history?service=<name>` | Last 60 sparkline data points per service |
-| `POST` | `/api/feedback` | Proxy to backend `/feedback` |
-| `POST` | `/api/ai/postmortem` | Proxy to ai-copilot `/postmortem` |
-| `GET`  | `/api/export/csv` | Download audit trail as CSV |
-| `GET`  | `/api/export/json` | Download audit trail as JSON |
-
-### Notification Service (port 8000)
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/slack/interactive` | Slack button webhook — approve_fix / enable_auto |
-| `GET`  | `/slack/status` | Slack integration status |
-
-### AI Copilot (port 8000)
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/explain` | AI incident explanation |
-| `POST` | `/postmortem` | Gemini-powered markdown postmortem |
-
-### Audit Engine (port 8000)
-| Method | Path | Purpose |
-|---|---|---|
-| `GET`  | `/api/internal/logs` | Internal audit log reader |
-| `GET`  | `/api/export?format=csv|json` | Export audit logs (up to 5000 rows) |
-
----
-
-## 🔧 Install Commands (Human Must Run)
-
-```bash
-# Phase 0: Hindsight memory SDK
-pip install hindsight-client
-
-# Phase 2: BFF SSE dependencies (already in dashboard-bff/requirements.txt)
-pip install "sse-starlette>=2.0.0" "redis>=5.0.0"
-
-# Phase 3: Slack ChatOps (httpx already in requirements)
-# No additional installs needed
-
-# UI: lucide-react icons (if not already installed)
-cd ui && npm install lucide-react
-```
-
----
-
-## 🚀 Verification Curls (port-forwarded API Gateway on :58663)
-
-```bash
-# Phase 0: Hindsight recall hit test
-curl -X POST http://localhost:58663/query \
-  -H "Content-Type: application/json" \
-  -d '{"query":"checkout service returning 500 errors","target_service":"order-service"}'
-
-# Phase 0: Human feedback
-curl -X POST http://localhost:58663/feedback \
-  -H "Content-Type: application/json" \
-  -d '{"incident_id":"test-001","verdict":"accept","user":"sre-operator"}'
-
-# Phase 1: Check SSE pilot stream
-curl -N http://localhost:58663/api/stream/pilot
-
-# Phase 2: Check SSE metrics stream  
-curl -N http://localhost:58663/api/stream/metrics
-
-# Phase 3: Slack status
-curl http://localhost:58663/slack/status
-
-# Phase 4: Generate postmortem
-curl -X POST http://localhost:58663/api/ai/postmortem \
-  -H "Content-Type: application/json" \
-  -d '{"incident_id":"test-001"}'
-
-# Phase 4: Export audit logs
-curl http://localhost:58663/api/export/csv -o audit_logs.csv
-```

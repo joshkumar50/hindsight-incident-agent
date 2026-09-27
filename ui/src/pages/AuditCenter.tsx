@@ -1,164 +1,93 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { ClipboardList, CheckCircle, Download, FileJson, FileText, FileSearch, ChevronDown } from 'lucide-react';
+import { ClipboardList, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuditLog {
   timestamp: string; event_type: string; incident_id?: string;
   decision?: string; confidence_score?: number; human_approved?: boolean;
 }
 
-const eventColor = (type: string) => {
-  if (type.includes('REMEDIATION') || type.includes('RECOVERY')) return 'bg-emerald-50 text-emerald-700';
-  if (type.includes('INCIDENT') || type.includes('ALERT')) return 'bg-red-50 text-red-700';
-  if (type.includes('CHAOS')) return 'bg-amber-50 text-amber-700';
-  return 'bg-indigo-50 text-indigo-700';
+const eventVariant = (type: string) => {
+  if (type.includes('REMEDIATION') || type.includes('RECOVERY')) return 'success';
+  if (type.includes('INCIDENT') || type.includes('ALERT')) return 'destructive';
+  if (type.includes('CHAOS')) return 'warning';
+  return 'default';
 };
 
 export const AuditCenter = () => {
-  const [postmortemContent, setPostmortemContent] = useState<string | null>(null);
-  const [postmortemLoading, setPostmortemLoading] = useState(false);
-  const [exportStatus, setExportStatus] = useState<string | null>(null);
-
   const { data, isLoading, error } = useQuery<AuditLog[]>({
     queryKey: ['audit'],
     queryFn: async () => { const res = await apiClient.get('/audit'); return res.data; }
   });
 
-  // Export helpers — trigger file download via anchor
-  const triggerDownload = (url: string, filename: string) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
-  const handleExportCsv = () => {
-    setExportStatus('Downloading CSV…');
-    triggerDownload('/api/export/csv', 'audit_logs.csv');
-    setTimeout(() => setExportStatus(null), 3000);
-  };
-
-  const handleExportJson = () => {
-    setExportStatus('Downloading JSON…');
-    triggerDownload('/api/export/json', 'audit_logs.json');
-    setTimeout(() => setExportStatus(null), 3000);
-  };
-
-  // Phase 4a: Generate postmortem for first incident found
-  const handlePostmortem = async () => {
-    const incidentId = data?.find(l => l.incident_id)?.incident_id;
-    if (!incidentId) {
-      setPostmortemContent('No incident ID found in audit logs.');
-      return;
-    }
-    setPostmortemLoading(true);
-    setPostmortemContent(null);
-    try {
-      // BFF proxies to ai-copilot /postmortem
-      const res = await apiClient.post('/ai/postmortem', { incident_id: incidentId });
-      setPostmortemContent(res.data.markdown || 'No postmortem content returned.');
-    } catch (e: any) {
-      setPostmortemContent(`Postmortem generation failed: ${e.message}`);
-    } finally {
-      setPostmortemLoading(false);
-    }
-  };
-
   return (
     <div className="space-y-4 max-w-6xl mx-auto">
-      {isLoading && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 animate-pulse h-48" />
-      )}
+      {isLoading && <Skeleton className="h-48 w-full" />}
+      
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
           Failed to connect to Audit Engine.
         </div>
       )}
+
       {data && data.length === 0 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 flex items-center gap-4">
-          <ClipboardList size={20} className="text-slate-400 shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-slate-700">No audit events recorded</p>
-            <p className="text-xs text-slate-500 mt-0.5">Events will appear here as the platform takes autonomous actions.</p>
-          </div>
-        </div>
+        <Card className="bg-slate-50 border-slate-200">
+          <CardContent className="p-6 flex items-center gap-4">
+            <ClipboardList size={20} className="text-slate-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-slate-700">No audit events recorded</p>
+              <p className="text-xs text-slate-500 mt-0.5">Events will appear here as the platform takes autonomous actions.</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
+
       {data && data.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <ClipboardList size={15} className="text-indigo-600" />
-              <h2 className="text-sm font-semibold text-slate-900">Decision Audit Trail</h2>
-              <span className="text-xs text-slate-400">{data.length} events</span>
-            </div>
-            {/* Phase 4c: Export + Postmortem buttons */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {exportStatus && (
-                <span className="text-xs text-emerald-600 font-medium">{exportStatus}</span>
-              )}
-              <button
-                id="audit-export-csv-btn"
-                onClick={handleExportCsv}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-              >
-                <FileText size={12} /> Export CSV
-              </button>
-              <button
-                id="audit-export-json-btn"
-                onClick={handleExportJson}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-              >
-                <FileJson size={12} /> Export JSON
-              </button>
-              <button
-                id="audit-postmortem-btn"
-                onClick={handlePostmortem}
-                disabled={postmortemLoading}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors disabled:opacity-60"
-              >
-                <FileSearch size={12} /> {postmortemLoading ? 'Generating…' : 'AI Postmortem'}
-              </button>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 z-10">
-                <tr>
-                  {['Timestamp', 'Event Type', 'Incident ID', 'Decision', 'Confidence', 'Approved'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        {h} <ChevronDown size={12} className="text-slate-300" />
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <ClipboardList size={15} className="text-indigo-600" /> Decision Audit Trail
+            </CardTitle>
+            <span className="text-xs font-num text-slate-400">{data.length} events</span>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Event Type</TableHead>
+                  <TableHead>Incident ID</TableHead>
+                  <TableHead>Decision</TableHead>
+                  <TableHead>Confidence</TableHead>
+                  <TableHead>Approved</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {data.map((log, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100 last:border-0">
-                    <td className="px-4 py-3 text-xs font-num text-slate-500 whitespace-nowrap">
+                  <TableRow key={idx}>
+                    <TableCell className="font-num text-slate-500 whitespace-nowrap">
                       {log.timestamp ? new Date(log.timestamp).toLocaleString() : '--'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${eventColor(log.event_type || '')}`}>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={eventVariant(log.event_type || '') as any}>
                         {log.event_type || '--'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs font-id text-slate-600">{log.incident_id || '--'}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600">{log.decision || '--'}</td>
-                    <td className="px-4 py-3 text-xs font-medium font-num">
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-id text-slate-600">{log.incident_id || '--'}</TableCell>
+                    <TableCell className="text-slate-600">{log.decision || '--'}</TableCell>
+                    <TableCell>
                       {log.confidence_score != null ? (
-                        <span className={`px-1.5 py-0.5 rounded ${
-                          log.confidence_score >= 0.9 ? 'text-emerald-700 bg-emerald-50' :
-                          log.confidence_score >= 0.7 ? 'text-amber-700 bg-amber-50' :
-                          'text-red-700 bg-red-50'
-                        }`}>{(log.confidence_score * 100).toFixed(0)}%</span>
+                        <Badge variant={log.confidence_score >= 0.9 ? 'success' : log.confidence_score >= 0.7 ? 'warning' : 'destructive'}>
+                          {(log.confidence_score * 100).toFixed(0)}%
+                        </Badge>
                       ) : '--'}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       {log.human_approved ? (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
                           <CheckCircle size={11} /> Yes
@@ -166,26 +95,13 @@ export const AuditCenter = () => {
                       ) : (
                         <span className="text-xs text-slate-400">Auto</span>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Phase 4a: Postmortem markdown output */}
-      {postmortemContent && (
-        <div className="bg-white border border-indigo-200 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <FileSearch size={15} className="text-indigo-600" />
-            <h2 className="text-sm font-semibold text-slate-900">AI-Generated Postmortem</h2>
-          </div>
-          <pre className="text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed bg-slate-50 rounded-lg p-4 overflow-auto max-h-96">
-            {postmortemContent}
-          </pre>
-        </div>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

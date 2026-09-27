@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from kubernetes import client as k8s_client
 from kubernetes import config as k8s_config
+from kubernetes.client.rest import ApiException
 from pydantic import BaseModel
 from pkg.core.config import get_config
 from pkg.core.errors import HindsightIncidentAgentException, register_error_handlers
@@ -54,9 +55,10 @@ async def execute_k8s_command(cmd: K8sCommand):
             )
             
         # 3. Add rollout restart annotation
+        # NOTE: annotation key prefix must be a valid RFC 1123 subdomain (no underscores).
         if not deployment.spec.template.metadata.annotations:
             deployment.spec.template.metadata.annotations = {}
-        deployment.spec.template.metadata.annotations["hindsight_agent-aiops/restartedAt"] = "now"
+        deployment.spec.template.metadata.annotations["hindsight-agent.aiops/restartedAt"] = "now"
         
         if deployment.spec.replicas == 0:
             deployment.spec.replicas = 1
@@ -66,38 +68,24 @@ async def execute_k8s_command(cmd: K8sCommand):
         )
         logger.info("deployment_healed_successfully", target=cmd.target)
         return {"status": "executed", "action": "auto_heal"}
-    except Exception as e:
-        logger.error("k8s_execution_failed", error=str(e))
-        raise HindsightIncidentAgentException("Kubernetes API execution failed", "K8S_ERROR", 500)
-
-
-@app.post("/rollback")
-async def rollback_k8s_command(cmd: K8sCommand):
-    """
-    Rolls back Kubernetes deployment changes when verification fails.
-    """
-    logger.info("rolling_back_k8s_deployment", target=cmd.target)
-    try:
-        deployment = v1_apps.read_namespaced_deployment(name=cmd.target, namespace="hindsight-agent-apps")
-        
-        # Rollback: reset annotations, restore standard safe replica and resource baseline
-        if not deployment.spec.template.metadata.annotations:
-            deployment.spec.template.metadata.annotations = {}
-        deployment.spec.template.metadata.annotations["hindsight_agent-aiops/rollbackAt"] = "now"
-        
-        deployment.spec.replicas = max(1, deployment.spec.replicas or 1)
-        for container in deployment.spec.template.spec.containers:
-            container.resources = k8s_client.V1ResourceRequirements(
-                limits={"cpu": "500m", "memory": "512Mi"},
-                requests={"cpu": "100m", "memory": "128Mi"}
-            )
-            
-        v1_apps.patch_namespaced_deployment(
-            name=cmd.target, namespace="hindsight-agent-apps", body=deployment
+    except ApiException as e:
+        logger.error(
+            "k8s_api_exception",
+            status=e.status,
+            reason=e.reason,
+            body=e.body[:500] if e.body else None,
+            target=cmd.target,
         )
-        logger.info("deployment_rollback_successful", target=cmd.target)
-        return {"status": "executed", "action": "rollback", "target": cmd.target}
+        raise HindsightIncidentAgentException(
+            f"K8s API error: {e.status} {e.reason}", "K8S_API_ERROR", 500
+        )
     except Exception as e:
-        logger.error("k8s_rollback_failed", error=str(e))
-        raise HindsightIncidentAgentException("Kubernetes API rollback failed", "K8S_ROLLBACK_ERROR", 500)
-
+        logger.error(
+            "k8s_unknown_exception",
+            type=type(e).__name__,
+            msg=str(e),
+            target=cmd.target,
+        )
+        raise HindsightIncidentAgentException(
+            f"K8s error: {type(e).__name__}: {e}", "K8S_ERROR", 500
+        )

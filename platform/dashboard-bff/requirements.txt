@@ -2,5 +2,3 @@ fastapi
 uvicorn
 pydantic
 httpx
-sse-starlette>=2.0.0
-redis>=5.0.0
