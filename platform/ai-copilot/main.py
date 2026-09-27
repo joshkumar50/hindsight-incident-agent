@@ -44,29 +44,33 @@ async def generate_explanation(request: IncidentReportRequest):
     Do NOT include any markdown formatting like \\\json or anything outside the JSON object.
     """
 
-    # Using local Ollama via Minikube's host network
-    OLLAMA_API_URL = "http://host.minikube.internal:11434/api/generate"
+    # Using Groq API for lightning fast inference
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+    GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
     try:
         async with httpx.AsyncClient() as client:
             res = await client.post(
-                OLLAMA_API_URL,
+                GROQ_API_URL,
                 json={
-                    "model": "llama3.1:8b",
-                    "prompt": prompt,
-                    "stream": False,
-                    "format": "json"
+                    "model": "llama-3.1-8b-instant",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                    "response_format": {"type": "json_object"}
                 },
-                headers={'Content-Type': 'application/json'},
-                timeout=45.0
+                headers={
+                    'Authorization': f'Bearer {GROQ_API_KEY}',
+                    'Content-Type': 'application/json'
+                },
+                timeout=15.0
             )
             res.raise_for_status()
-            content = res.json()["response"]
+            content = res.json()["choices"][0]["message"]["content"]
             
             try:
                 parsed = json.loads(content)
                 return parsed
             except json.JSONDecodeError:
-                logger.error(f"Failed to parse Ollama response as JSON: {content}")
+                logger.error(f"Failed to parse Groq response as JSON: {content}")
                 return {
                     "executive_summary": "Failed to parse AI response.",
                     "technical_summary": content,
@@ -74,9 +78,9 @@ async def generate_explanation(request: IncidentReportRequest):
                 }
                 
     except Exception as e:
-        logger.error(f"ollama_api_failed: {str(e)}")
+        logger.error(f"groq_api_failed: {str(e)}")
         return {
-            "executive_summary": "Local AI generation failed.",
+            "executive_summary": "Groq AI generation failed.",
             "technical_summary": str(e),
-            "postmortem": "Please ensure Ollama is running locally with the llama3.1:8b model."
+            "postmortem": "Please ensure the Groq API key is valid and network is accessible."
         }
