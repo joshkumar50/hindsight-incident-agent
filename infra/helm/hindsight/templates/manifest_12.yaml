@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: chaos-scenario-manager
+  name: chaos-scenario-manager
+  namespace: incident-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaos-scenario-manager
+  template:
+    metadata:
+      labels:
+        app: chaos-scenario-manager
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: hindsight-agent-global-config
+        - secretRef:
+            name: hindsight-agent-secrets
+        image: hindsight-agent/chaos-scenario-manager:latest
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        name: chaos-scenario-manager
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaos-scenario-manager
+  namespace: incident-agent-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: chaos-scenario-manager

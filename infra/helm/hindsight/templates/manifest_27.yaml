@@ -1,0 +1,61 @@
+apiVersion: v1
+data:
+  SERVICE_NAME: recovery-verification-engine
+kind: ConfigMap
+metadata:
+  name: recovery-verification-engine-config
+  namespace: incident-agent-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recovery-verification-engine
+  namespace: incident-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recovery-verification-engine
+  template:
+    metadata:
+      labels:
+        app: recovery-verification-engine
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: recovery-verification-engine-config
+        - configMapRef:
+            name: hindsight-agent-global-config
+        - secretRef:
+            name: hindsight-agent-secrets
+        image: hindsight-agent/recovery-verification-engine:latest
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        name: recovery-verification-engine
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      serviceAccountName: recovery-engine-sa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recovery-verification-engine
+  namespace: incident-agent-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: recovery-verification-engine

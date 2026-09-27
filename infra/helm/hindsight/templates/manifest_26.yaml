@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: recovery-validation-service
+  name: recovery-validation-service
+  namespace: incident-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recovery-validation-service
+  template:
+    metadata:
+      labels:
+        app: recovery-validation-service
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: hindsight-agent-global-config
+        - secretRef:
+            name: hindsight-agent-secrets
+        image: hindsight-agent/recovery-validation-service:latest
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        name: recovery-validation-service
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recovery-validation-service
+  namespace: incident-agent-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: recovery-validation-service

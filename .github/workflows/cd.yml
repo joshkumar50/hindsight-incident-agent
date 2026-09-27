@@ -1,0 +1,20 @@
+name: CD Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build and Push Docker Images
+      run: |
+        echo "Pushing images to enterprise registry..."
+    - name: Helm Package
+      run: |
+        helm package infra/helm/hindsight_agent
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1

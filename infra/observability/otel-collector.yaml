@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: incident-agent-observability
+data:
+  relay.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+    exporters:
+      jaeger:
+        endpoint: jaeger.incident-agent-observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+      logging:
+        loglevel: info
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [jaeger, logging]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: incident-agent-observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector:0.87.0
+        command:
+          - "/otelcol"
+          - "--config=/conf/relay.yaml"
+        ports:
+        - containerPort: 4317
+        volumeMounts:
+        - name: otel-config
+          mountPath: /conf
+      volumes:
+      - name: otel-config
+        configMap:
+          name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: incident-agent-observability
+spec:
+  ports:
+  - port: 4317
+    targetPort: 4317
+  selector:
+    app: otel-collector

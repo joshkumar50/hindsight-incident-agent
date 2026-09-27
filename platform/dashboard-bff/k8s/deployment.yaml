@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-bff
+  namespace: incident-agent-system
+  labels:
+    app: dashboard-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard-bff
+  template:
+    metadata:
+      labels:
+        app: dashboard-bff
+    spec:
+      containers:
+      - name: dashboard-bff
+        image: hindsight_agent-dashboard-bff:latest
+        imagePullPolicy: Never
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: hindsight_agent-global-config
+        - secretRef:
+            name: hindsight_agent-secrets
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-bff
+  namespace: incident-agent-system
+spec:
+  selector:
+    app: dashboard-bff
+  ports:
+  - port: 80
+    targetPort: 8000

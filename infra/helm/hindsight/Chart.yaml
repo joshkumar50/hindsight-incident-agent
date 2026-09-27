@@ -1,0 +1,6 @@
+apiVersion: v2
+name: hindsight-agent
+description: A Helm chart for Kubernetes Autonomous SRE Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

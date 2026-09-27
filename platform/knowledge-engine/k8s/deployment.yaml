@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knowledge-engine-config
+  namespace: incident-agent-system
+data:
+  SERVICE_NAME: "knowledge-engine"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-engine
+  namespace: incident-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: knowledge-engine
+  template:
+    metadata:
+      labels:
+        app: knowledge-engine
+    spec:
+      containers:
+      - name: knowledge-engine
+        image: hindsight_agent-knowledge-engine:latest
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: knowledge-engine-config
+        - configMapRef:
+            name: hindsight_agent-global-config
+        - secretRef:
+            name: hindsight_agent-secrets
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knowledge-engine
+  namespace: incident-agent-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: knowledge-engine

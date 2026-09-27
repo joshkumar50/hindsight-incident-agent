@@ -1,0 +1,23 @@
+﻿apiVersion: v1
+kind: Namespace
+metadata:
+  name: incident-agent-system
+  labels:
+    name: incident-agent-system
+    env: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hindsight-agent-apps
+  labels:
+    name: hindsight-agent-apps
+    env: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: incident-agent-observability
+  labels:
+    name: incident-agent-observability
+    env: production

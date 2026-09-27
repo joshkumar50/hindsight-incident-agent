@@ -1,0 +1,43 @@
+# .gitingestignore
+# This file tells gitingest (and similar AI repo-to-text tools) which files/folders 
+# to exclude from the final prompt to save massive amounts of LLM tokens.
+
+# Version control
+.git/
+.gitignore
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+venv/
+env/
+.env
+
+# Frontend / Node specific
+node_modules/
+dist/
+build/
+package-lock.json
+yarn.lock
+
+# Media and Docs that waste tokens
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+HACKATHON_PITCH.md
+pitch_deck_outline.md
+startingapp.md
+
+# Infrastructure / Docker (Exclude if you only want AI to focus on code logic)
+# infrastructure/ 
+
+# Cache / Temp
+.DS_Store
+scratch/

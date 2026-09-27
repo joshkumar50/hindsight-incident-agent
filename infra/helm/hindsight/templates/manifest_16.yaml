@@ -1,0 +1,61 @@
+apiVersion: v1
+data:
+  SERVICE_NAME: execution-engine
+kind: ConfigMap
+metadata:
+  name: execution-engine-config
+  namespace: incident-agent-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: execution-engine
+  namespace: incident-agent-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: execution-engine
+  template:
+    metadata:
+      labels:
+        app: execution-engine
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: execution-engine-config
+        - configMapRef:
+            name: hindsight-agent-global-config
+        - secretRef:
+            name: hindsight-agent-secrets
+        image: hindsight-agent/execution-engine:latest
+        imagePullPolicy: Never
+        livenessProbe:
+          httpGet:
+            path: /liveness
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        name: execution-engine
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          httpGet:
+            path: /readiness
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      serviceAccountName: recovery-engine-sa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: execution-engine
+  namespace: incident-agent-system
+spec:
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: execution-engine

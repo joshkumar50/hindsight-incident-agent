@@ -1,0 +1,35 @@
+# Default values for hindsight_agent-aiops.
+
+global:
+  environment: production
+  domain: hindsight_agent-aiops.local
+
+observability:
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+  loki:
+    enabled: true
+  tempo:
+    enabled: true
+
+databases:
+  postgresql:
+    enabled: true
+  redis:
+    enabled: true
+  qdrant:
+    enabled: true
+
+apps:
+  authService:
+    replicaCount: 1
+  paymentService:
+    replicaCount: 1
+
+platform:
+  telemetryCollector:
+    replicaCount: 1
+  anomalyEngine:
+    replicaCount: 1

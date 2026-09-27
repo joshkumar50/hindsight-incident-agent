@@ -1,0 +1,38 @@
+# ---------------------------------------------------------
+# Stage 1: Builder
+# ---------------------------------------------------------
+FROM python:3.11-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+
+# Build wheels for all dependencies to avoid requiring gcc in the final image
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+
+# ---------------------------------------------------------
+# Stage 2: Runner (Production)
+# ---------------------------------------------------------
+FROM python:3.11-slim
+
+# Create a non-root user
+RUN adduser --disabled-password --gecos "" hindsight_agentuser
+
+WORKDIR /app
+
+# Install runtime dependencies (e.g. libpq for psycopg2 if needed)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy wheels from builder and install them
+COPY --from=builder /app/wheels /wheels
+RUN pip install --no-cache /wheels/* && rm -rf /wheels
+
+# Define the shared entrypoint behavior that derived images will use
+USER hindsight_agentuser

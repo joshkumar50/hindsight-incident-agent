@@ -1,0 +1,27 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hindsight_agent-global-config
+  namespace: incident-agent-system
+data:
+  ENVIRONMENT: "production"
+  REDIS_HOST: "redis-master.incident-agent-system.svc.cluster.local"
+  REDIS_PORT: "6379"
+  POSTGRES_HOST: "postgres-db.incident-agent-system.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "incident_agent_db"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.incident-agent-observability.svc.cluster.local:4317"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hindsight_agent-global-config
+  namespace: hindsight-agent-apps
+data:
+  ENVIRONMENT: "production"
+  REDIS_HOST: "redis-master.incident-agent-system.svc.cluster.local"
+  REDIS_PORT: "6379"
+  POSTGRES_HOST: "postgres-db.incident-agent-system.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "incident_agent_db"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.incident-agent-observability.svc.cluster.local:4317"

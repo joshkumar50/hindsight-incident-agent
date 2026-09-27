@@ -1,0 +1,31 @@
+# RBAC for Recovery Engine (Needs privileges to restart/scale pods)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: recovery-engine-sa
+  namespace: incident-agent-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hindsight_agent-recovery-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "statefulsets"]
+  verbs: ["get", "list", "watch", "patch", "scale"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hindsight_agent-recovery-binding
+subjects:
+- kind: ServiceAccount
+  name: recovery-engine-sa
+  namespace: incident-agent-system
+roleRef:
+  kind: ClusterRole
+  name: hindsight_agent-recovery-role
+  apiGroup: rbac.authorization.k8s.io

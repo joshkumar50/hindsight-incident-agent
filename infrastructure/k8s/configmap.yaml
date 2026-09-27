@@ -1,0 +1,22 @@
+# ====================================================================
+# Kubernetes ConfigMap — AI-RCI Environment Variables
+# ====================================================================
+# Deploy: kubectl apply -f configmap.yaml
+# ====================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airci-configmap
+  namespace: airci
+data:
+  # ---- Frontend Configs ----
+  # This tells the Nginx container where to route /api/ traffic
+  BACKEND_API_URL: "http://airci-backend-svc:8000"
+
+  # ---- Backend Configs ----
+  AWS_REGION: "us-east-1"
+  DEFAULT_LLM_PROVIDER: "bedrock"
+  # Optional: You can override MySQL config here if needed
+  MYSQL_PORT: "3306"
+  MYSQL_DATABASE: "airci_history"
