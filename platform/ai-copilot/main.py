@@ -44,48 +44,29 @@ async def generate_explanation(request: IncidentReportRequest):
     Do NOT include any markdown formatting like \\\json or anything outside the JSON object.
     """
 
-    USE_LOCAL_AI = True
-    if USE_LOCAL_AI or not GEMINI_API_KEY:
-        logger.warning("Using LOCAL AI fallback response.")
-        rca = request.incident_data.get("root_cause", "unknown service")
-        desc = request.incident_data.get("description", "Anomalous behavior detected.")
-        services = ", ".join(request.incident_data.get("impacted_services", []))
-        
-        # Determine likely fix for realistic mock
-        fix = "Restarted affected pods and scaled up replicas."
-        if "latency" in desc.lower() or "timeout" in desc.lower():
-            fix = "Increased timeouts and added caching layer."
-        elif "auth" in rca.lower() or "token" in desc.lower():
-            fix = "Rotated expiring credentials and cleared token cache."
-            
-        return {
-            "executive_summary": f"Incident triggered by anomalous behavior in {rca}. The AI Copilot mitigated the issue automatically.",
-            "technical_summary": f"Metrics indicated {desc}. Impact extended to dependent services: {services}.",
-            "postmortem": f"Automated recovery successful: {fix} No further human intervention required."
-        }
-
+    # Using local Ollama via Minikube's host network
+    OLLAMA_API_URL = "http://host.minikube.internal:11434/api/generate"
     try:
         async with httpx.AsyncClient() as client:
             res = await client.post(
-                GEMINI_API_URL,
+                OLLAMA_API_URL,
                 json={
-                    "contents": [{"parts": [{"text": prompt}]}],
-                    "generationConfig": {
-                        "temperature": 0.2,
-                        "responseMimeType": "application/json"
-                    }
+                    "model": "llama3.1:8b",
+                    "prompt": prompt,
+                    "stream": False,
+                    "format": "json"
                 },
                 headers={'Content-Type': 'application/json'},
-                timeout=15.0
+                timeout=45.0
             )
             res.raise_for_status()
-            content = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+            content = res.json()["response"]
             
             try:
                 parsed = json.loads(content)
                 return parsed
             except json.JSONDecodeError:
-                logger.error(f"Failed to parse Gemini response as JSON: {content}")
+                logger.error(f"Failed to parse Ollama response as JSON: {content}")
                 return {
                     "executive_summary": "Failed to parse AI response.",
                     "technical_summary": content,
@@ -93,9 +74,9 @@ async def generate_explanation(request: IncidentReportRequest):
                 }
                 
     except Exception as e:
-        logger.error(f"gemini_api_failed: {str(e)}")
+        logger.error(f"ollama_api_failed: {str(e)}")
         return {
-            "executive_summary": "AI generation failed.",
+            "executive_summary": "Local AI generation failed.",
             "technical_summary": str(e),
-            "postmortem": "Please check Gemini API key and network connectivity."
+            "postmortem": "Please ensure Ollama is running locally with the llama3.1:8b model."
         }
