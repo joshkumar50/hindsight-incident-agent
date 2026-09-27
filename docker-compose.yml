@@ -1,43 +1,18 @@
 # ====================================================================
-# docker-compose.yml — AI-RCI Microservices Orchestration
+# docker-compose.yml — Hindsight Incident Agent Microservices Orchestration
 # ====================================================================
-# Runs 3 services:
-#   1. mysql    — MySQL 8 database (replaces AWS RDS for local dev)
-#   2. backend  — Python FastAPI SRE Agent (port 8000)
-#   3. frontend — React + Nginx dashboard (port 3000)
+# Runs 2 services:
+#   1. backend  — Python FastAPI SRE Agent (port 8000)
+#   2. frontend — React + Nginx dashboard (port 3000)
 #
 # HOW TO RUN:
 #   docker-compose up --build
 #
-# HOW BACKEND CONNECTS TO DATABASE:
-#   - backend reads config/config.yaml → mysql.host = "mysql"
-#   - Docker networking resolves "mysql" to the mysql container IP
-#   - Backend auto-creates database 'airci_history' and tables on boot
 # ====================================================================
 
 version: '3.8'
 
 services:
-  # ---- MySQL Database Layer ----
-  mysql:
-    image: mysql:8.0
-    container_name: airci-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: airci_secret_2024
-      MYSQL_DATABASE: airci_history
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - airci-network
-
   # ---- Python FastAPI Backend ----
   backend:
     build:
@@ -48,18 +23,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Database connection — points to the mysql service container
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
-      MYSQL_USER: root
-      MYSQL_PASSWORD: airci_secret_2024
-      MYSQL_DATABASE: airci_history
-      # LLM Provider (override config.yaml if needed)
-      # DEFAULT_LLM_PROVIDER: bedrock
-      # AWS_REGION: us-east-1
-    depends_on:
-      mysql:
-        condition: service_healthy
+      # Memory Provider: Hindsight Persistent Memory
+      # Requires HINDSIGHT_API_KEY injected in environment
+      - HINDSIGHT_CLOUD_BASE=https://api.hindsight.vectorize.io
     networks:
       - airci-network
 
@@ -79,10 +45,6 @@ services:
       - backend
     networks:
       - airci-network
-
-volumes:
-  mysql_data:
-    driver: local
 
 networks:
   airci-network:

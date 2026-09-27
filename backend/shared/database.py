@@ -201,9 +201,9 @@ class HindsightMemory:
                 "symptoms": symptoms,
                 "root_cause": root_cause,
                 "playbook": playbook_str,
-                "human_approved": human_approved,
+                "human_approved": str(human_approved),
                 "outcome": outcome,
-                "success_rate": success_rate
+                "success_rate": str(success_rate)
             }
 
             def _do_retain():

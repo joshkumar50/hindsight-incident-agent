@@ -123,6 +123,22 @@ export const ExecutiveDashboard = () => {
             />
           </div>
 
+          {/* Last Diagnostic Badge */}
+          <div className="premium-card p-4 flex items-center justify-between" style={{ background: 'rgba(168, 85, 247, 0.05)', borderLeft: '4px solid var(--accent-purple)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-purple-100 text-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.4)] animate-pulse">
+                🧠
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-purple-700 tracking-tight uppercase">HINDSIGHT RECALL HIT</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] font-medium">Last Diagnostic: 0.1s &middot; 0 LLM tokens &middot; playbook from memory</p>
+              </div>
+            </div>
+            <button className="text-xs font-semibold px-3 py-1.5 rounded-md bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 transition-colors">
+              View Case
+            </button>
+          </div>
+
           {/* Autonomous Pilot Real-time Stepper Timeline */}
           <AutonomousPilotTimeline />
 

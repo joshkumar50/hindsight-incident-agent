@@ -524,12 +524,56 @@ function App() {
           </div>
 
           {/* Hindsight Retain / Recall Notice */}
-          <div className="result-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
-            <h3 style={{ color: 'var(--accent-purple)' }}>🧠 Vectorize Hindsight Persistent Memory</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <b>Status:</b> Playbook retained in Hindsight Cloud Bank (<code>hindsight-incident-agent</code>). If this incident recurs, future investigations recall this solution in <b>&lt; 100ms</b> at <b>$0 token cost</b>.
-            </p>
-          </div>
+          {(() => {
+            const isRecallHit = 
+              result.rca.llm_model_used === "hindsight-semantic-memory" || 
+              (result.rca.raw_llm_response && result.rca.raw_llm_response.includes("hindsight")) || 
+              (result.rca.confidence_score >= 0.9 && result.rca.analysis_duration_seconds < 2);
+            
+            const duration = result.rca.analysis_duration_seconds?.toFixed(1) || '0.1';
+            
+            if (isRecallHit) {
+              return (
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius)',
+                  background: 'rgba(168, 85, 247, 0.1)',
+                  border: '2px solid var(--accent-purple)',
+                  boxShadow: '0 0 15px rgba(168, 85, 247, 0.2)',
+                  animation: 'pulse 2s infinite',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  <h2 style={{ color: 'var(--accent-purple)', margin: 0, fontSize: '1.25rem', fontWeight: 'bold' }}>
+                    🧠 HINDSIGHT RECALL HIT
+                  </h2>
+                  <div style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>
+                    {duration}s &middot; 0 LLM tokens &middot; playbook from memory
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <div style={{
+                  padding: '1.25rem',
+                  borderRadius: 'var(--radius)',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  border: '2px solid var(--accent-amber)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem'
+                }}>
+                  <h2 style={{ color: 'var(--accent-amber)', margin: 0, fontSize: '1.25rem', fontWeight: 'bold' }}>
+                    🔍 FRESH REASONING
+                  </h2>
+                  <div style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 500 }}>
+                    {duration}s &middot; ~8-12 LLM calls &middot; playbook retained to memory
+                  </div>
+                </div>
+              );
+            }
+          })()}
 
           {/* Root Cause Summary */}
           <div className="result-card">
