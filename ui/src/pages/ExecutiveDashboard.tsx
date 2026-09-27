@@ -167,13 +167,6 @@ export const ExecutiveDashboard = () => {
       positive: true,
       icon: <Brain size={12} className="text-slate-400" />,
     },
-    {
-      label: "$ SAVED",
-      value: `$${((recovered * 4200)).toLocaleString()}`,
-      delta: "est. eng-hours",
-      positive: true,
-      icon: <DollarSign size={12} className="text-slate-400" />,
-    },
   ];
 
   return (
@@ -181,7 +174,7 @@ export const ExecutiveDashboard = () => {
 
       {/* ── 1. KPI STRIP ──────────────────────────────────────── */}
       <Card>
-        <div className="grid grid-cols-3 md:grid-cols-6 divide-x divide-slate-100">
+        <div className="grid grid-cols-3 md:grid-cols-5 divide-x divide-slate-100">
           {kpis.map(k => (
             <div key={k.label} className="px-4 py-3 flex flex-col gap-1">
               <div className="flex items-center gap-1">
@@ -195,194 +188,185 @@ export const ExecutiveDashboard = () => {
         </div>
       </Card>
 
-      {/* ── 2. LIVE INCIDENT FEED ─────────────────────────────── */}
-      <Card className="min-h-[420px]">
-        <CardHeader className="border-b border-slate-100 pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle>Live Incidents</CardTitle>
-              <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                Watching 12 services
-              </span>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate("/incidents")}>
-              View all <ChevronRight size={13} />
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="px-0 pb-0">
-          {incidents.length === 0 ? (
-            /* Empty state */
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-              <span className="relative flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50" />
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500" />
-              </span>
-              <div>
-                <p className="text-sm font-medium text-slate-700">All systems operational</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Last incident: resolved · MTTR {mttr > 0 ? `${mttr}s` : "—"}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => navigate("/chaos")}>
-                <Zap size={12} /> Simulate Incident
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-6" />
-                  <TableHead>ID</TableHead>
-                  <TableHead>Symptoms</TableHead>
-                  <TableHead>Impacted</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Age</TableHead>
-                  <TableHead className="w-6" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {incidents.map(inc => (
-                  <TableRow
-                    key={inc.id}
-                    className="cursor-pointer"
-                    onClick={() => setSelectedIncident(inc)}
-                  >
-                    <TableCell>
-                      <span className={`block w-2 h-2 rounded-full ${severityDot(inc.severity)}`} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs text-slate-700">{inc.id}</span>
-                    </TableCell>
-                    <TableCell className="max-w-[260px]">
-                      <p className="text-xs text-slate-700 line-clamp-1">{inc.description}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{inc.root_cause}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1 flex-wrap">
-                        {inc.impacted_services.slice(0, 2).map(s => (
-                          <Badge key={s} variant="secondary">{s}</Badge>
-                        ))}
-                        {inc.impacted_services.length > 2 && (
-                          <Badge variant="secondary">+{inc.impacted_services.length - 2}</Badge>
-                        )}
-                        {inc.impacted_services.length === 0 && (
-                          <span className="text-[10px] text-slate-300">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(inc.status)}>{inc.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-[11px] text-slate-400 tabular-nums">{timeAgo(inc.timestamp)}</span>
-                    </TableCell>
-                    <TableCell>
-                      <ChevronRight size={13} className="text-slate-300" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ── 3. QUICK ACTIONS ──────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <Button variant="outline" className="justify-start gap-2" onClick={() => navigate("/ai")}>
-          <Search size={13} className="text-slate-400" /> Run Diagnostic
-        </Button>
-        <Button variant="outline" className="justify-start gap-2" onClick={() => navigate("/chaos")}>
-          <FlaskConical size={13} className="text-slate-400" /> Trigger Chaos
-        </Button>
-        <Button variant="outline" className="justify-start gap-2" onClick={() => navigate("/ai")}>
-          <Brain size={13} className="text-slate-400" /> View Memory
-        </Button>
-        <Button variant="outline" className="justify-start gap-2" onClick={() => navigate("/audit")}>
-          <Activity size={13} className="text-slate-400" /> Open Audit
-        </Button>
-      </div>
-
-      {/* ── 4. SECONDARY GRID ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        {/* Health Status */}
-        <Card>
-          <CardHeader className="border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <Server size={13} className="text-slate-400" />
-              <CardTitle>Health Status</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="py-0 px-5 divide-y divide-slate-100">
-            {[
-              { label: "Cluster", status: dash?.cluster_health ?? "…", uptime: "99.99%", checked: "just now" },
-              { label: "Application", status: dash?.app_health ?? "…", uptime: "99.97%", checked: "3s ago" },
-              { label: "Platform", status: dash?.platform_health ?? "…", uptime: "100%", checked: "3s ago" },
-            ].map(row => (
-              <div key={row.label} className="flex items-center justify-between py-2.5">
+      {/* ── 2. BENTO GRID LAYOUT ──────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* Main Column (Span 2) */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Live Incidents */}
+          <Card>
+            <CardHeader className="border-b border-slate-100 py-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {row.status === "Healthy"
-                    ? <CheckCircle2 size={13} className="text-emerald-500" />
-                    : <AlertTriangle size={13} className="text-amber-500" />}
-                  <span className="text-sm text-slate-700">{row.label}</span>
+                  <CardTitle className="text-sm font-semibold">Active Incidents</CardTitle>
+                  <span className="flex items-center gap-1.5 text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                    </span>
+                    Monitoring Network
+                  </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400 tabular-nums">{row.uptime}</span>
-                  <Badge variant={row.status === "Healthy" ? "success" : "warning"}>{row.status}</Badge>
-                  <span className="text-[10px] text-slate-300 hidden md:block">{row.checked}</span>
-                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" onClick={() => navigate("/incidents")}>
+                  View all
+                </Button>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="p-0">
+              {incidents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50/50">
+                  <CheckCircle2 size={24} className="text-emerald-400 mb-3" />
+                  <p className="text-sm font-medium text-slate-700">Zero Active Incidents</p>
+                  <p className="text-xs text-slate-400 mt-1">Platform is operating within normal parameters.</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent bg-slate-50/50">
+                      <TableHead className="text-xs font-semibold h-8 w-8" />
+                      <TableHead className="text-xs font-semibold h-8">Identifier</TableHead>
+                      <TableHead className="text-xs font-semibold h-8">Impact</TableHead>
+                      <TableHead className="text-xs font-semibold h-8">Status</TableHead>
+                      <TableHead className="text-xs font-semibold h-8">Duration</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {incidents.map(inc => (
+                      <TableRow key={inc.id} className="cursor-pointer hover:bg-slate-50" onClick={() => setSelectedIncident(inc)}>
+                        <TableCell className="py-2.5">
+                          <span className={`block w-2 h-2 rounded-full ${severityDot(inc.severity)}`} />
+                        </TableCell>
+                        <TableCell className="py-2.5">
+                          <span className="font-mono text-xs font-medium text-slate-700">{inc.id}</span>
+                        </TableCell>
+                        <TableCell className="py-2.5 max-w-[200px]">
+                          <p className="text-xs text-slate-700 truncate">{inc.description}</p>
+                        </TableCell>
+                        <TableCell className="py-2.5">
+                          <Badge variant={statusVariant(inc.status)} className="text-[10px]">{inc.status}</Badge>
+                        </TableCell>
+                        <TableCell className="py-2.5">
+                          <span className="text-[11px] text-slate-400 tabular-nums">{timeAgo(inc.timestamp)}</span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Recent Memory */}
-        <Card>
-          <CardHeader className="border-b border-slate-100">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Brain size={13} className="text-slate-400" />
-                <CardTitle>Hindsight Memory</CardTitle>
+          {/* Hindsight Memory */}
+          <Card>
+            <CardHeader className="border-b border-slate-100 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Brain size={14} className="text-indigo-500" />
+                  <CardTitle className="text-sm font-semibold">Autonomous Resolutions</CardTitle>
+                </div>
+                <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" onClick={() => navigate("/ai")}>
+                  Browse Bank
+                </Button>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/ai")}>
-                View all <ChevronRight size={12} />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="py-0 px-5 divide-y divide-slate-100">
-            {memories.length === 0 ? (
-              <p className="text-xs text-slate-400 py-4 text-center">No memories retained yet.</p>
-            ) : (
-              memories.map((m, i) => (
-                <div key={i} className="py-2.5 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-[11px] text-slate-500">{m.incident_id}</p>
-                    <p className="text-xs text-slate-700 line-clamp-1 mt-0.5">{m.symptoms}</p>
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1">
-                    <Badge variant={m.outcome === "success" ? "success" : "destructive"}>
-                      {m.outcome}
-                    </Badge>
-                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full"
-                        style={{ width: `${(m.success_rate ?? 1) * 100}%` }}
-                      />
+            </CardHeader>
+            <CardContent className="p-0 divide-y divide-slate-100">
+              {memories.length === 0 ? (
+                <div className="py-10 text-center text-xs text-slate-400 bg-slate-50/50">
+                  No historical interventions logged.
+                </div>
+              ) : (
+                memories.map((m, i) => (
+                  <div key={i} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                    <div className="min-w-0 pr-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-[10px] font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">{m.incident_id}</span>
+                        <span className="text-xs text-slate-700 truncate">{m.symptoms}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate leading-relaxed">
+                        <span className="font-medium text-slate-600">Action taken:</span> {m.root_cause}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <Badge variant={m.outcome === "success" ? "success" : "destructive"} className="text-[10px] mb-1.5">
+                        {m.outcome}
+                      </Badge>
+                      <div className="flex items-center gap-1.5 justify-end text-[10px] text-slate-400 font-mono">
+                        {(m.success_rate * 100).toFixed(0)}% Conf
+                        <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(m.success_rate ?? 1) * 100}%` }} />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
+        {/* Sidebar Column (Span 1) */}
+        <div className="space-y-4">
+          
+          {/* Health Status */}
+          <Card>
+            <CardHeader className="border-b border-slate-100 py-4">
+              <div className="flex items-center gap-2">
+                <Server size={14} className="text-slate-700" />
+                <CardTitle className="text-sm font-semibold">Infrastructure Health</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {[
+                { label: "Kubernetes Cluster", status: dash?.cluster_health ?? "Healthy", uptime: "99.99%" },
+                { label: "Service Mesh", status: dash?.app_health ?? "Healthy", uptime: "99.97%" },
+                { label: "Control Plane", status: dash?.platform_health ?? "Healthy", uptime: "100.0%" },
+              ].map(row => (
+                <div key={row.label} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-700">{row.label}</span>
+                    <span className="text-[10px] font-mono text-slate-400">{row.uptime} SLA</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${row.status === 'Healthy' ? 'bg-emerald-500 w-full' : 'bg-amber-500 w-[95%]'}`} />
+                    </div>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${row.status === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {row.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* System Telemetry (Replacing repetitive buttons) */}
+          <Card>
+            <CardHeader className="border-b border-slate-100 py-4 bg-slate-900 rounded-t-xl">
+              <div className="flex items-center gap-2 text-white">
+                <Activity size={14} className="text-emerald-400" />
+                <CardTitle className="text-sm font-semibold">System Telemetry</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 bg-slate-900 rounded-b-xl text-slate-300 text-xs font-mono">
+              <div className="p-4 border-b border-slate-800 space-y-2">
+                <div className="flex justify-between"><span>CPU Allocation</span> <span className="text-white">42.1%</span></div>
+                <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-400 rounded-full w-[42%]" />
+                </div>
+              </div>
+              <div className="p-4 border-b border-slate-800 space-y-2">
+                <div className="flex justify-between"><span>Memory Usage</span> <span className="text-white">68.4%</span></div>
+                <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full w-[68%]" />
+                </div>
+              </div>
+              <div className="p-4 hover:bg-slate-800/50 transition-colors cursor-pointer flex items-center justify-between text-emerald-400" onClick={() => navigate("/audit")}>
+                <span>View Full Audit Log</span>
+                <ChevronRight size={12} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Incident slide-over */}
