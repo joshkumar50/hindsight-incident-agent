@@ -1,7 +1,7 @@
-# ⚡ KubePilot — Autonomous Kubernetes SRE & Root Cause Intelligence Platform
+# ⚡ Hindsight Incident Agent — Autonomous Kubernetes SRE & Root Cause Intelligence Platform
 
 > **AI-powered Autonomous SRE Platform for Kubernetes Clusters.**
-> Automatically diagnoses, remediates, and learns from incidents using advanced telemetry, chaos engineering, and LLM reasoning.
+> Automatically diagnoses, remediates, and learns from incidents using advanced telemetry, chaos engineering, and LLM reasoning. Hindsight Incident Agent integrates Vectorize Hindsight persistent memory to learn from every resolved incident.
 
 ---
 
@@ -11,9 +11,9 @@
 When production is down, every minute of downtime costs enterprises thousands of dollars. Kubernetes clusters are highly complex, and SRE teams must scramble to manually correlate metrics, logs, and traces across disjointed dashboards to find the root cause. 
 The biggest bottleneck? **Stateless troubleshooting.** Once an incident is resolved, the knowledge of *how* it was fixed is often lost in chat logs. When the same issue strikes a month later, engineers waste hours reinventing the wheel because traditional diagnostic tools have no memory of past outages.
 
-**The Solution (KubePilot):** 
-KubePilot is a Level-3 Autonomous AI Incident Response Agent that makes **persistent memory the star**. Using a complex ReAct (Reasoning & Acting) loop, it autonomously queries telemetry systems (Prometheus, Elasticsearch) to diagnose root causes. 
-It integrates a **Persistent Memory Bank** to learn from past incidents. When an outage is resolved, KubePilot saves the diagnostic fingerprint and playbook. If a semantically similar issue happens again, KubePilot recalls the exact resolution instantly—dropping MTTR (Mean Time To Resolution) drastically.
+**The Solution (Hindsight Incident Agent):** 
+Hindsight Incident Agent is a Level-3 Autonomous AI Incident Response Agent that makes **persistent memory the star**. Using a complex ReAct (Reasoning & Acting) loop, it autonomously queries telemetry systems (Prometheus, Elasticsearch) to diagnose root causes. 
+It integrates **Vectorize Hindsight — Persistent Agent Memory** to learn from past incidents. When an outage is resolved, Hindsight Incident Agent saves the diagnostic fingerprint and playbook. If a semantically similar issue happens again, Hindsight Incident Agent recalls the exact resolution instantly—dropping MTTR (Mean Time To Resolution) drastically.
 
 ---
 
@@ -22,7 +22,7 @@ It integrates a **Persistent Memory Bank** to learn from past incidents. When an
 The platform is organized into 5 primary pillars, avoiding monolith structures in favor of modular, event-driven microservices:
 
 ```text
-KubePilot-Autonomous-Kubernetes-SRE-Platform/
+Hindsight-Incident-Agent/
 │
 ├── ui/                 # ⚛️ React 19 Frontend (Vite + shadcn/ui)
 │   ├── src/
@@ -46,7 +46,7 @@ KubePilot-Autonomous-Kubernetes-SRE-Platform/
 │   └── traffic-generator/
 │
 ├── infra/              # 🏗️ Infrastructure as Code
-│   ├── helm/           # Helm charts for deploying KubePilot components
+│   ├── helm/           # Helm charts for deploying Hindsight Incident Agent components
 │   └── manifests/      # Kubernetes manifests (Deployments, Services)
 │
 ├── docs/               # 📖 Architecture and operations guides
@@ -70,10 +70,10 @@ The architecture is highly decoupled, relying heavily on a Redis EventBus and a 
                                                       │        │
                      ┌────────────────────────────────┘        └────────────────┐
                      ▼                                                  ▼
-           ┌──────────────────┐                               ┌──────────────────┐
-           │ incident-engine  │                               │    ai-copilot    │
-           │ (Active Incidents)│                              │ (Root Cause LLM) │
-           └──────────────────┘                               └──────────────────┘
+           ┌──────────────────┐                               ┌────────────────────────────────┐
+           │ incident-engine  │                               │ Hindsight Cloud (Vectorize.io) │
+           │ (Active Incidents)│                              │ (Root Cause LLM)               │
+           └──────────────────┘                               └────────────────────────────────┘
 ```
 
 ### Connection Points in Code:
@@ -114,10 +114,10 @@ kubectl rollout restart deployment/dashboard-bff -n incident-agent-system
 
 ---
 
-## 🧠 Persistent Memory Bank
+## 🧠 Vectorize Hindsight — Persistent Agent Memory
 
-KubePilot's autonomous memory bank ensures that it learns from every incident.
+Hindsight Incident Agent's autonomous memory bank ensures that it learns from every incident.
 - **Recall Phase**: Before analyzing logs, the platform queries the Memory Bank for past similar outages to instantly suggest proven runbooks.
 - **Retain Phase**: When an incident is solved or human feedback is given, the platform commits the learning to the bank.
 
-This gives KubePilot the experience of a senior SRE, drastically reducing MTTR for recurring infrastructure patterns.
+This gives Hindsight Incident Agent the experience of a senior SRE, drastically reducing MTTR for recurring infrastructure patterns.
