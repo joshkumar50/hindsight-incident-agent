@@ -34,7 +34,7 @@ export const Settings = () => {
           <Info size={14} className="text-indigo-600 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-indigo-900">Hindsight Incident Agent v1.0.0</p>
-            <p className="text-xs text-indigo-600 mt-0.5">Autonomous Kubernetes SRE Platform -- Hackathon Build</p>
+            <p className="text-xs text-indigo-600 mt-0.5">Autonomous Kubernetes SRE Platform -- Enterprise Build</p>
           </div>
         </CardContent>
       </Card>

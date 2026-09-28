@@ -1,267 +1,123 @@
-# ⚡ Hindsight Incident Agent — Autonomous Kubernetes SRE & Root Cause Intelligence Platform
+# ⚡ KubePilot — Autonomous Kubernetes SRE & Root Cause Intelligence Platform
 
-> **HackwithHyderabad 3.0 Official Submission**
-> **Track:** AI Agents That Learn Using Hindsight (Engineering & DevOps)
-> **Team:** Team Durjay
-> 
-> **Team Members (6/6):**
-> *   **Josh Kumar** (Team Leader) - `chittetijoshkumar@gmail.com`
-> *   **Kondaveeti Sai Sri** - `saisrikondaveeti@gmail.com`
-> *   **Hema Sankar Reddy Gade** - `hemashankareddy@gmail.com`
-> *   **Tanu Sri** - `sritanu354@gmail.com`
-> *   **Ramyasri Gade** - `ramyasrigade1432@gmail.com`
-> *   **Jhansi Annapureddy** - `annapureddyjhansi2@gmail.com`
-
----
-
-> AI-powered SRE Diagnostics Agent for EKS Kubernetes Clusters.  
-> Automatically diagnoses incidents by querying Prometheus metrics, Elasticsearch logs, and Jaeger traces using a ReAct reasoning LLM agent.
+> **AI-powered Autonomous SRE Platform for Kubernetes Clusters.**
+> Automatically diagnoses, remediates, and learns from incidents using advanced telemetry, chaos engineering, and LLM reasoning.
 
 ---
 
 ## 🌍 Domain & Problem Statement
 
-**Hackathon Challenge:** AI Agents That Learn Using Hindsight (Engineering & DevOps)
-**Use Case:** Incident Response Agent
-
 **The Real Business Problem:** 
 When production is down, every minute of downtime costs enterprises thousands of dollars. Kubernetes clusters are highly complex, and SRE teams must scramble to manually correlate metrics, logs, and traces across disjointed dashboards to find the root cause. 
 The biggest bottleneck? **Stateless troubleshooting.** Once an incident is resolved, the knowledge of *how* it was fixed is often lost in chat logs. When the same issue strikes a month later, engineers waste hours reinventing the wheel because traditional diagnostic tools have no memory of past outages.
 
-**The Solution (Hindsight Incident Agent):** 
-Hindsight Incident Agent is a Level-3 Autonomous AI Incident Response Agent that makes **persistent memory the star**. Using a complex ReAct (Reasoning & Acting) loop, it autonomously queries telemetry systems (Prometheus, Elasticsearch) to diagnose root causes. 
-More importantly, Hindsight Incident Agent integrates **Vectorize Hindsight Persistent Memory** to learn from past incidents. When an outage is resolved, Hindsight Incident Agent saves the diagnostic fingerprint and playbook. If a semantically similar issue happens again, Hindsight Incident Agent recalls the exact resolution instantly—demonstrating a clear learning curve where the agent gets noticeably faster and smarter over time, dropping MTTR (Mean Time To Resolution) from hours to under 1 second.
+**The Solution (KubePilot):** 
+KubePilot is a Level-3 Autonomous AI Incident Response Agent that makes **persistent memory the star**. Using a complex ReAct (Reasoning & Acting) loop, it autonomously queries telemetry systems (Prometheus, Elasticsearch) to diagnose root causes. 
+It integrates a **Persistent Memory Bank** to learn from past incidents. When an outage is resolved, KubePilot saves the diagnostic fingerprint and playbook. If a semantically similar issue happens again, KubePilot recalls the exact resolution instantly—dropping MTTR (Mean Time To Resolution) drastically.
 
 ---
 
 ## 📂 Project Structure
 
-```
-hindsight-incident-agent/
+The platform is organized into 5 primary pillars, avoiding monolith structures in favor of modular, event-driven microservices:
+
+```text
+KubePilot-Autonomous-Kubernetes-SRE-Platform/
 │
-├── frontend/                     # ⚛️ React.js Frontend (Vite + Nginx)
+├── ui/                 # ⚛️ React 19 Frontend (Vite + shadcn/ui)
 │   ├── src/
-│   │   ├── App.jsx               # Main dashboard component
-│   │   ├── main.jsx              # React entry point
-│   │   ├── index.css             # Global dark-mode design system
-│   │   └── services/
-│   │       └── api.js            # ← CONNECTS to backend /query endpoint
-│   ├── nginx.conf                # Production reverse proxy config
-│   ├── Dockerfile                # Multi-stage build (Node → Nginx)
-│   ├── package.json              # React/Vite dependencies
-│   ├── vite.config.js            # Dev proxy: /api → localhost:8000
-│   └── index.html                # HTML entry point
+│   │   ├── pages/      # Dashboard, Incident Center, AI Analysis, Memory Bank
+│   │   ├── api/        # Axios API clients connecting to dashboard-bff
+│   │   └── components/ # Reusable UI components
 │
-├── agent/                        # 🤖 Custom SRE Agent (ReAct Loop)
-│   ├── agent_workflow.py         # ReAct reasoning loop with tool calling
-│   ├── llm_client.py             # Unified LLM client (Bedrock/OpenAI/Anthropic)
-│   └── __init__.py
+├── platform/           # 🧠 17 SRE Microservices (FastAPI)
+│   ├── dashboard-bff/  # Backend-For-Frontend (routes UI traffic)
+│   ├── ai-copilot/     # AI LLM reasoning engine for root-cause explanations
+│   ├── chaos-engine/   # Automated chaos injection and stress testing
+│   ├── incident-engine/# Manages active alerts and resolutions
+│   └── ...             # 13 other specialized engines (monitoring, execution, rollback)
 │
-├── config/
-│   └── config.yaml               # ← Central API keys & Hindsight credentials
+├── apps/               # 🎯 Target Dummy Applications (to inject chaos into)
+│   ├── auth-service/
+│   ├── payment-service/
+│   ├── order-service/
+│   ├── inventory-service/
+│   ├── notification-service/
+│   └── traffic-generator/
 │
-├── lambda_/                      # ☁️ AWS Lambda Package
-│   ├── lambda_handler.py         # Serverless entry point
-│   ├── ai/
-│   │   ├── bedrock_client.py     # Direct AWS Bedrock model invocation
-│   │   └── rca_analyzer.py       # Fail-safe single-turn analyzer
-│   ├── collectors/
-│   │   ├── prometheus_collector.py   # Metrics scraper
-│   │   ├── elasticsearch_collector.py # Log scraper
-│   │   └── jaeger_collector.py       # Trace scraper
-│   └── integrations/
-│       └── remediation.py        # Auto-healing actions (Slack, Jira, K8s)
+├── infra/              # 🏗️ Infrastructure as Code
+│   ├── helm/           # Helm charts for deploying KubePilot components
+│   └── manifests/      # Kubernetes manifests (Deployments, Services)
 │
-├── shared/                       # 📦 Shared Python Modules
-│   ├── config.py                 # Reads config.yaml → exposes `config` object
-│   ├── models.py                 # Pydantic data models (request/response schemas)
-│   └── database.py               # ← Hindsight memory client (retain/recall)
-│
-├── infrastructure/
-│   ├── terraform/                # Terraform IaC for Lambda + IAM
-│   │   ├── main.tf
-│   │   └── iam.tf
-│   └── k8s/                      # Kubernetes manifests for EKS deployment
-│       ├── backend-deployment.yaml
-│       ├── frontend-deployment.yaml
-│       └── db-secret.yaml
-│
-├── main.py                       # 🐍 FastAPI backend server (port 8000)
-├── Dockerfile.backend            # Backend container image
-├── docker-compose.yml            # Local orchestration (Hindsight + Backend + Frontend)
-├── requirements.txt              # Python dependencies
-└── README.md                     # This file
+├── docs/               # 📖 Architecture and operations guides
+├── scripts/            # 🛠️ Build scripts and base Dockerfiles
+└── pkg/                # 📦 Shared libraries (Core, EventBus, Telemetry, Math)
 ```
 
 ---
 
 ## 🔗 How the Microservices Connect
 
-```
-┌──────────────────┐       POST /api/query       ┌───────────────────┐
-│                  │ ──────────────────────────▶  │                   │
-│  React Frontend  │                              │  FastAPI Backend  │
-│  (Port 3000)     │ ◀──────────────────────────  │  (Port 8000)      │
-│                  │       JSON RCA Response       │                   │
-└──────────────────┘                              └────────┬──────────┘
-                                                           │
-                                                           │ Hindsight SDK
-                                                           ▼
-                                                  ┌───────────────────┐
-                                                  │  Hindsight Cloud  │
-                                                  │ (Vectorize.io API)│
-                                                  └───────────────────┘
+The architecture is highly decoupled, relying heavily on a Redis EventBus and a Backend-For-Frontend (BFF) pattern.
+
+```text
+┌──────────────────┐       GET /api/*        ┌─────────────────────────┐
+│                  │ ──────────────────────▶ │                         │
+│  React UI (Vite) │                         │  dashboard-bff (Port 80)│
+│  (Port 5173)     │ ◀────────────────────── │  (K8s Service)          │
+│                  │       JSON Response     │                         │
+└──────────────────┘                         └────────┬────────┬───────┘
+                                                      │        │
+                     ┌────────────────────────────────┘        └────────────────┐
+                     ▼                                                  ▼
+           ┌──────────────────┐                               ┌──────────────────┐
+           │ incident-engine  │                               │    ai-copilot    │
+           │ (Active Incidents)│                              │ (Root Cause LLM) │
+           └──────────────────┘                               └──────────────────┘
 ```
 
 ### Connection Points in Code:
-
 | From | To | File | Code |
 |---|---|---|---|
-| **App.jsx** → Backend | POST /query | `frontend/src/services/api.js` | `client.post('/query', payload)` |
-| **Vite Dev Proxy** | localhost:8000 | `frontend/vite.config.js` | `proxy: { '/api': { target: 'http://localhost:8000' } }` |
-| **Nginx Prod Proxy** | backend:8000 | `frontend/nginx.conf` | `proxy_pass http://backend:8000/;` |
-| **Backend** → Hindsight | Memory API | `shared/database.py` | `hindsight.retain()`, `hindsight.recall()` |
-| **Backend** → Config | Reads credentials | `shared/config.py` → `config/config.yaml` | `config.hindsight.api_key` |
+| **UI** → BFF | GET /api/memory/bank | `ui/src/api/client.ts` | `apiClient.get('/memory/bank')` |
+| **Vite Dev Proxy** | localhost:3001 | `ui/vite.config.ts` | `proxy: { '/api': { target: 'http://localhost:3001' } }` |
+| **dashboard-bff** | ai-copilot | `platform/dashboard-bff/main.py` | `client.post("http://ai-copilot.../explain")` |
+| **EventBus (Redis)** | Platform Services | `pkg/eventbus/client.py` | `await bus.publish("incident.detected", data)` |
 
 ---
 
-## 🚀 Quick Start (Local & Docker)
+## 🚀 Quick Start (Minikube & Vite)
 
-### Option 1: Docker Compose (Recommended)
+You do **NOT** need to build the Docker image and roll out the Kubernetes deployment for every UI change! The Vite dev server automatically hot-reloads your changes.
 
-This runs the Frontend and Backend microservices with a single command:
-
+### 1. Start Kubernetes Environment
 ```bash
-# 1. Clone and navigate
-cd hindsight-incident-agent
-
-# 2. Add your Hindsight Promo Code Credit Key to config/config.yaml
-#    hindsight:
-#      api_key: "hsk_..."
-
-# 3. Start all services
-docker-compose up --build
-
-# 4. Access the dashboard
-#    Frontend: http://localhost:3000
-#    Backend API: http://localhost:8000/docs
+minikube start
+kubectl apply -k infra/manifests
 ```
 
-### Option 2: Run Locally (Without Docker)
-
-#### Backend
+### 2. Run the UI locally
 ```bash
-# 1. Install Python dependencies
-pip install -r requirements.txt
-
-# 2. Configure your Vectorize Hindsight key in config/config.yaml:
-#    hindsight:
-#      api_key: "hsk_..."
-
-# 3. Configure your LLM API key in config/config.yaml:
-#    bedrock:
-#      aws_access_key_id: "AKIA..."
-#      aws_secret_access_key: "..."
-
-# 4. Start the backend
-python main.py
-# Backend runs at http://localhost:8000
-```
-
-#### Frontend
-```bash
-# 1. Navigate to frontend
-cd frontend
-
-# 2. Install Node dependencies
+cd ui
 npm install
-
-# 3. Start Vite dev server (auto-proxies /api to backend)
 npm run dev
 # Frontend runs at http://localhost:5173
+```
 
-> 💡 **Developer Tip:** You do **NOT** need to build the Docker image and roll out the Kubernetes deployment for every UI change!
-> The Vite dev server (`npm run dev`) automatically hot-reloads your changes at `localhost:5173`.
-> You only need to build the Docker image (`minikube docker-env` -> `docker build ...`) and run `kubectl rollout restart deployment/ui` when you want to deploy the final UI to the Kubernetes cluster.
+### 3. Deploy Platform Changes
+If you modify a python file in `platform/`:
+```bash
+eval $(minikube docker-env)
+docker build -t hindsight-agent/dashboard-bff:latest --build-arg SERVICE_NAME=dashboard-bff --build-arg dir=platform/dashboard-bff -f platform/dashboard-bff/Dockerfile .
+kubectl rollout restart deployment/dashboard-bff -n incident-agent-system
 ```
 
 ---
 
-## 🧠 Hindsight Persistent Memory Integration
+## 🧠 Persistent Memory Bank
 
-This project relies entirely on **Vectorize Hindsight** for persistent memory, eliminating the need for legacy relational databases like MySQL. 
+KubePilot's autonomous memory bank ensures that it learns from every incident.
+- **Recall Phase**: Before analyzing logs, the platform queries the Memory Bank for past similar outages to instantly suggest proven runbooks.
+- **Retain Phase**: When an incident is solved or human feedback is given, the platform commits the learning to the bank.
 
-### How the Backend Connects to Hindsight
-The agent uses the official `hindsight-client` SDK (`shared/database.py`) to connect to Hindsight Cloud. 
-*   **Recall Phase**: Before analyzing logs, Hindsight Incident Agent queries Hindsight for past similar outages to instantly suggest proven runbooks without burning LLM tokens.
-*   **Retain Phase**: When an incident is solved, Hindsight Incident Agent commits the learning to the Hindsight bank.
-
-To get your API key, sign up at [ui.hindsight.vectorize.io](https://ui.hindsight.vectorize.io) and apply the hackathon promo code (`MEMHACK99`).
-
----
-
-## 🔧 Configuration Reference
-
-### config/config.yaml
-
-| Section | Key | Purpose |
-|---|---|---|
-| `hindsight.api_key` | `hsk_...` | **Required.** Authentication for persistent memory |
-| `default_llm_provider` | `bedrock` / `openai` / `anthropic` | Which LLM to use |
-| `bedrock.aws_access_key_id` | AWS key | Bedrock authentication |
-| `bedrock.model_id` | Model name | e.g. `anthropic.claude-3-5-sonnet-20241022-v2:0` |
-| `openai.api_key` | OpenAI key | Alternative LLM provider |
-| `anthropic.api_key` | Anthropic key | Alternative LLM provider |
-| `agent.max_iterations` | `8` | Max ReAct reasoning loops (cost safety) |
-| `agent.temperature` | `0.1` | LLM creativity (low = factual) |
----
-
-## 📡 API Endpoints
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/` | System info (active LLM, tools) |
-| `GET` | `/health` | Health check for K8s probes |
-| `POST` | `/query` | Run SRE diagnostic analysis |
-| `GET` | `/query?q=...` | Quick browser test endpoint |
-| `GET` | `/docs` | Interactive Swagger API docs |
-
-### Example POST /query Request
-```json
-{
-  "query": "Why is the checkout service returning 500 errors?",
-  "target_service": "checkout-svc",
-  "target_namespace": "production",
-  "lookback_minutes": 60
-}
-```
-
-### Example Response
-```json
-{
-  "request_id": "abc-123",
-  "rca": {
-    "severity": "high",
-    "root_cause_summary": "Database connection pool exhaustion causing 500 errors",
-    "detailed_analysis": "The checkout service is experiencing...",
-    "recommended_actions": [
-      "Increase database connection pool size to 50",
-      "Add connection timeout of 5 seconds",
-      "Restart checkout-svc pods"
-    ],
-    "affected_components": ["checkout-svc", "postgres-primary"],
-    "confidence_score": 0.87,
-    "llm_model_used": "anthropic.claude-3-5-sonnet-20241022-v2:0"
-  }
-}
-```
-
----
-
-## 🧠 Hindsight Persistent Memory
-
-The platform uses **Hindsight by Vectorize** for intelligent semantic memory. Instead of a dumb cache, Hindsight Incident Agent learns from every incident:
-- **Recall Phase**: Before analyzing logs, Hindsight Incident Agent queries Hindsight for past similar outages to instantly suggest proven runbooks.
-- **Retain Phase**: When an incident is solved or human feedback is given, Hindsight Incident Agent commits the learning to Hindsight.
-
-This gives Hindsight Incident Agent the experience of a senior SRE, drastically reducing MTTR for recurring infrastructure patterns.
+This gives KubePilot the experience of a senior SRE, drastically reducing MTTR for recurring infrastructure patterns.

@@ -1,4 +1,6 @@
-﻿import httpx
+import os
+BACKEND_BASE_URL = os.getenv("BACKEND_SERVICE_URL", "http://host.minikube.internal:8000")
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,7 +42,7 @@ async def get_dashboard():
         # --- Incidents ---
         try:
             inc_resp = await client.get(
-                "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active",
+                f"{BACKEND_BASE_URL}/incidents/active",
                 timeout=TIMEOUT
             )
             all_incidents = inc_resp.json().get("incidents", [])
@@ -52,7 +54,7 @@ async def get_dashboard():
         # --- Recovery Metrics ---
         try:
             rec_resp = await client.get(
-                "http://recovery-validation-service.incident-agent-system.svc.cluster.local/metrics/mttr",
+                f"{BACKEND_BASE_URL}/metrics/mttr",
                 timeout=TIMEOUT
             )
             rec_data = rec_resp.json()
@@ -76,7 +78,7 @@ async def get_dashboard():
 
 @app.get("/api/incidents")
 async def get_incidents():
-    url = "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active"
+    url = f"{BACKEND_BASE_URL}/incidents/active"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -94,7 +96,7 @@ ai_cache = {}
 
 @app.get("/api/ai")
 async def get_ai_analysis():
-    url = "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active"
+    url = f"{BACKEND_BASE_URL}/incidents/active"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -108,7 +110,7 @@ async def get_ai_analysis():
                 else:
                     try:
                         ai_resp = await client.post(
-                            "http://ai-copilot.incident-agent-system.svc.cluster.local/explain",
+                            f"{BACKEND_BASE_URL}/explain",
                             json={"incident_data": inc},
                             timeout=15.0
                         )
@@ -131,7 +133,7 @@ async def get_ai_analysis():
 
 @app.get("/api/recovery")
 async def get_recovery():
-    url = "http://recovery-validation-service.incident-agent-system.svc.cluster.local/metrics/mttr"
+    url = f"{BACKEND_BASE_URL}/metrics/mttr"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -147,7 +149,7 @@ async def get_recovery():
 
 @app.get("/api/observability")
 async def get_observability():
-    url = "http://monitoring-engine.incident-agent-system.svc.cluster.local/metrics/aggregated"
+    url = f"{BACKEND_BASE_URL}/metrics/aggregated"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -166,60 +168,60 @@ async def get_observability():
 async def get_topology():
     return {
         "nodes": [
-            # Layer 0 – UI
+            # Layer 0 â€“ UI
             {"id": "ui", "type": "ui", "label": "React UI", "layer": 0},
-            # Layer 1 – Entry
+            # Layer 1 â€“ Entry
             {"id": "dashboard-bff", "type": "platform", "label": "Dashboard BFF", "layer": 1},
             {"id": "api-gateway", "type": "service", "label": "API Gateway", "layer": 1},
-            # Layer 2 – Business services
+            # Layer 2 â€“ Business services
             {"id": "auth-service", "type": "service", "label": "Auth", "layer": 2},
             {"id": "payment-service", "type": "service", "label": "Payment", "layer": 2},
             {"id": "order-service", "type": "service", "label": "Order", "layer": 2},
             {"id": "inventory-service", "type": "service", "label": "Inventory", "layer": 2},
             {"id": "notification-service", "type": "service", "label": "Notification", "layer": 2},
-            # Layer 3 – SRE Intelligence
+            # Layer 3 â€“ SRE Intelligence
             {"id": "anomaly-engine", "type": "sre", "label": "Anomaly Engine", "layer": 3},
             {"id": "dependency-engine", "type": "sre", "label": "Dependency Engine", "layer": 3},
             {"id": "incident-engine", "type": "sre", "label": "Incident Engine", "layer": 3},
             {"id": "monitoring-engine", "type": "sre", "label": "Monitoring Engine", "layer": 3},
             {"id": "telemetry-collector", "type": "sre", "label": "Telemetry Collector", "layer": 3},
-            # Layer 4 – AI & Decision
+            # Layer 4 â€“ AI & Decision
             {"id": "ai-orchestrator", "type": "ai", "label": "AI Orchestrator", "layer": 4},
             {"id": "ai-copilot", "type": "ai", "label": "AI Copilot", "layer": 4},
             {"id": "root-cause-analysis-engine", "type": "ai", "label": "RCA Engine", "layer": 4},
             {"id": "knowledge-engine", "type": "ai", "label": "Knowledge Engine", "layer": 4},
             {"id": "decision-engine", "type": "ai", "label": "Decision Engine", "layer": 4},
             {"id": "policy-engine", "type": "ai", "label": "Policy Engine", "layer": 4},
-            # Layer 5 – Execution & Recovery
+            # Layer 5 â€“ Execution & Recovery
             {"id": "execution-engine", "type": "execution", "label": "Execution Engine", "layer": 5},
             {"id": "kubernetes-controller", "type": "execution", "label": "K8s Controller", "layer": 5},
             {"id": "recovery-engine", "type": "execution", "label": "Recovery Engine", "layer": 5},
             {"id": "recovery-planning-engine", "type": "execution", "label": "Recovery Planner", "layer": 5},
             {"id": "recovery-validation-service", "type": "execution", "label": "Recovery Validator", "layer": 5},
             {"id": "rollback-engine", "type": "execution", "label": "Rollback Engine", "layer": 5},
-            # Layer 6 – Chaos
+            # Layer 6 â€“ Chaos
             {"id": "chaos-controller", "type": "chaos", "label": "Chaos Controller", "layer": 6},
             {"id": "chaos-engine", "type": "chaos", "label": "Chaos Engine", "layer": 6},
             {"id": "chaos-scenario-manager", "type": "chaos", "label": "Scenario Manager", "layer": 6},
             {"id": "fault-injection-engine", "type": "chaos", "label": "Fault Injector", "layer": 6},
-            # Layer 7 – Datastores
+            # Layer 7 â€“ Datastores
             {"id": "redis", "type": "datastore", "label": "Redis EventBus", "layer": 7},
             {"id": "postgres", "type": "datastore", "label": "PostgreSQL", "layer": 7},
             # Audit
             {"id": "audit-engine", "type": "platform", "label": "Audit Engine", "layer": 4},
         ],
         "edges": [
-            # UI → Entry
+            # UI â†’ Entry
             {"source": "ui", "target": "dashboard-bff"},
             {"source": "ui", "target": "api-gateway"},
-            # Entry → Business
+            # Entry â†’ Business
             {"source": "dashboard-bff", "target": "api-gateway"},
             {"source": "api-gateway", "target": "auth-service"},
             {"source": "api-gateway", "target": "payment-service"},
             {"source": "api-gateway", "target": "order-service"},
             {"source": "api-gateway", "target": "inventory-service"},
             {"source": "order-service", "target": "notification-service"},
-            # Business → Datastores
+            # Business â†’ Datastores
             {"source": "auth-service", "target": "postgres"},
             {"source": "payment-service", "target": "postgres"},
             {"source": "order-service", "target": "postgres"},
@@ -264,7 +266,7 @@ async def get_topology():
 
 @app.get("/api/chaos")
 async def get_chaos_status():
-    url = "http://chaos-controller.incident-agent-system.svc.cluster.local/status"
+    url = f"{BACKEND_BASE_URL}/status"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -281,7 +283,7 @@ class ChaosStartRequest(BaseModel):
 
 @app.post("/api/chaos/start")
 async def start_chaos(request: ChaosStartRequest):
-    url = "http://chaos-controller.incident-agent-system.svc.cluster.local/start"
+    url = f"{BACKEND_BASE_URL}/start"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=request.model_dump(), timeout=TIMEOUT)
@@ -293,7 +295,7 @@ async def start_chaos(request: ChaosStartRequest):
 
 @app.post("/api/chaos/stop/{experiment_id}")
 async def stop_chaos(experiment_id: str):
-    url = f"http://chaos-controller.incident-agent-system.svc.cluster.local/stop/{experiment_id}"
+    url = f"{BACKEND_BASE_URL}/stop/{experiment_id}"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, timeout=TIMEOUT)
@@ -308,7 +310,7 @@ async def stop_chaos(experiment_id: str):
 
 @app.get("/api/audit")
 async def get_audit_logs():
-    url = "http://audit-engine.incident-agent-system.svc.cluster.local/api/internal/logs"
+    url = f"{BACKEND_BASE_URL}/api/internal/logs"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -357,3 +359,46 @@ async def get_cluster_info():
         return {
             "total_nodes": 0, "total_pods": 0, "namespaces": 0, "deployments": 0, "services": []
         }
+
+_fallback_memory = [
+    {
+        "incident_id": "INC-8192",
+        "symptoms": "High CPU utilization on auth-service",
+        "root_cause": "Hash calculation loop bug under concurrent load",
+        "playbook": ["Scale up auth-service replicas", "Rollback to previous stable image"],
+        "success_rate": 0.95,
+        "outcome": "success",
+        "human_approved": True
+    },
+    {
+        "incident_id": "INC-7731",
+        "symptoms": "500 errors from payment-service",
+        "root_cause": "Database connection pool exhaustion",
+        "playbook": ["Increase connection pool size to 50", "Restart payment-service pods"],
+        "success_rate": 0.88,
+        "outcome": "human_modified",
+        "human_approved": True
+    },
+    {
+        "incident_id": "INC-6542",
+        "symptoms": "Inventory service timeouts",
+        "root_cause": "Redis cache eviction policy causing thrashing",
+        "playbook": ["Change maxmemory-policy to allkeys-lru", "Flush Redis cache"],
+        "success_rate": 0.76,
+        "outcome": "success",
+        "human_approved": False
+    }
+]
+
+
+@app.get("/api/memory/bank")
+async def get_memory_bank():
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        try:
+            resp = await client.get(f"{BACKEND_BASE_URL}/memory/bank")
+            return resp.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch from backend: {e}")
+            return {"bank_id": "error", "total_memories": 0, "memories": []}
+
+

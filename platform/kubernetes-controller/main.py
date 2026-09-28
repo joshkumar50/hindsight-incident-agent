@@ -43,7 +43,7 @@ async def execute_k8s_command(cmd: K8sCommand):
     logger.info("executing_k8s_command", target=cmd.target)
 
     try:
-        # GUARANTEED HEALING: For the demo/hackathon, we explicitly undo all possible chaos faults
+        # GUARANTEED HEALING: For the demo/presentation, we explicitly undo all possible chaos faults
         # 1. Ensure replica is at least 1
         deployment = v1_apps.read_namespaced_deployment(name=cmd.target, namespace="hindsight-agent-apps")
         

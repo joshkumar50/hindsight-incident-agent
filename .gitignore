@@ -23,13 +23,17 @@ wheels/
 
 # Virtual environments
 venv/
+.venv/
 ENV/
 env.bak/
 venv.bak/
 
-# Environment variables
+# Environment & secrets
 .env
 .env.local
+.env.*.local
+*.key
+*.pem
 
 # Kubernetes/Local dev
 .minikube/
@@ -46,5 +50,24 @@ logs/
 *.swo
 .DS_Store
 
+# OS
+Thumbs.db
+
+# Node
+node_modules/
+.vite/
+npm-debug.log*
+yarn-error.log*
+
+# Test / build artifacts
+.pytest_cache/
+.coverage
+
 # Agent specific
 .gemini/
+
+# Drafts (published content lives on Dev.to/LinkedIn/YouTube)
+drafts/
+
+test_wc.ps1
+trim.py

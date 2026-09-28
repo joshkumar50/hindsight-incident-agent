@@ -11,6 +11,8 @@ import { ChaosEngineering } from './pages/ChaosEngineering';
 import { Observability } from './pages/Observability';
 import { AuditCenter } from './pages/AuditCenter';
 import { Settings } from './pages/Settings';
+import { MemoryBank } from './pages/MemoryBank';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -32,6 +34,7 @@ function App() {
             <Route path="/topology" element={<LiveTopology />} />
             <Route path="/incidents" element={<IncidentCenter />} />
             <Route path="/ai" element={<AIAnalysis />} />
+            <Route path="/memory" element={<MemoryBank />} />
             <Route path="/recovery" element={<RecoveryCenter />} />
             <Route path="/chaos" element={<ChaosEngineering />} />
             <Route path="/observability" element={<Observability />} />

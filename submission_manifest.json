@@ -1,0 +1,31 @@
+{
+  "project_name": "Hindsight Incident Agent",
+  "problem_statement": "AI Agents That Learn Using Hindsight — Engineering & DevOps — Incident Response Agent",
+  "team": [
+    { "name": "Josh Kumar", "email": "chittetijoshkumar@gmail.com" },
+    { "name": "Kondaveeti Sai Sri", "email": "saisrikondaveeti@gmail.com" },
+    { "name": "Hema Sankar Reddy Gade", "email": "hemashankareddy@gmail.com" },
+    { "name": "Tanu Sri", "email": "sritanu354@gmail.com" },
+    { "name": "Ramyasri Gade", "email": "ramyasrigade1432@gmail.com" },
+    { "name": "Jhansi Annapureddy", "email": "annapureddyjhansi2@gmail.com" }
+  ],
+  "repo_url": "https://github.com/joshkumar50/hindsight-incident-agent",
+  "video_url": "PASTE_YOUTUBE_URL",
+  "articles": [
+    { "member": "Josh Kumar", "url": "PASTE_DEVTO_URL" },
+    { "member": "Kondaveeti Sai Sri", "url": "PLACEHOLDER" },
+    { "member": "Hema Sankar Reddy Gade", "url": "PLACEHOLDER" },
+    { "member": "Tanu Sri", "url": "PLACEHOLDER" },
+    { "member": "Ramyasri Gade", "url": "PLACEHOLDER" },
+    { "member": "Jhansi Annapureddy", "url": "PLACEHOLDER" }
+  ],
+  "social_posts": [
+    { "member": "Josh Kumar", "url": "PASTE_LINKEDIN_URL" },
+    { "member": "Kondaveeti Sai Sri", "url": "PLACEHOLDER" },
+    { "member": "Hema Sankar Reddy Gade", "url": "PLACEHOLDER" },
+    { "member": "Tanu Sri", "url": "PLACEHOLDER" },
+    { "member": "Ramyasri Gade", "url": "PLACEHOLDER" },
+    { "member": "Jhansi Annapureddy", "url": "PLACEHOLDER" }
+  ],
+  "hindsight_usage_summary": "Hindsight provides persistent agent memory. Before each diagnostic, the agent calls recall() to retrieve similar past incidents; on a hit with success_rate >= 0.8, it returns the cached playbook in ~1.5s with zero LLM tokens. After each fresh diagnosis, retain() commits the new playbook to the bank. Human feedback (accept/modify/reject) further tunes the success_rate metadata so future recalls rank proven fixes higher."
+}

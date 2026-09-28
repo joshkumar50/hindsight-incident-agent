@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { MemoryHitBadge } from "../components/MemoryHitBadge";
+import { useStore } from "../store/useStore";
 
 /* ─── API shapes ─────────────────────────────────────────── */
 interface DashboardData {
@@ -108,6 +110,7 @@ function IncidentSheet({ incident, onClose }: { incident: Incident; onClose: () 
 export const ExecutiveDashboard = () => {
   const navigate = useNavigate();
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const { lastDiagnostic } = useStore();
 
   const { data: dash } = useQuery<DashboardData>({
     queryKey: ["dashboard"],
@@ -187,6 +190,14 @@ export const ExecutiveDashboard = () => {
           ))}
         </div>
       </Card>
+
+      {lastDiagnostic && (
+        <MemoryHitBadge 
+          mode={lastDiagnostic.mode}
+          durationSeconds={lastDiagnostic.durationSeconds}
+          confidence={lastDiagnostic.confidence}
+        />
+      )}
 
       {/* ── 2. BENTO GRID LAYOUT ──────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

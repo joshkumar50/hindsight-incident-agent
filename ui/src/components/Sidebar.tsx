@@ -18,6 +18,7 @@ const navGroups = [
     items: [
       { name: 'Incident Center', path: '/incidents', icon: AlertTriangle },
       { name: 'AI Analysis', path: '/ai', icon: Brain },
+      { name: 'Memory Bank', path: '/memory', icon: Brain },
       { name: 'Recovery Center', path: '/recovery', icon: RefreshCw },
     ]
   },

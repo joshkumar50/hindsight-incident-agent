@@ -1,4 +1,4 @@
-# Hackathon Demo Guide (5 Minutes)
+# Demo Guide (5 Minutes)
 
 **0:00 - 0:30 (The Hook)**:
 "Good evening. We are Team Nexbit. Modern Kubernetes architectures are too complex for humans to troubleshoot in real-time. We built Hindsight Incident Agent: an Autonomous SRE platform that detects, diagnoses, and repairs cluster failures in seconds, without human intervention."

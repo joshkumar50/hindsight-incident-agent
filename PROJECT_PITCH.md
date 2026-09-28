@@ -158,5 +158,5 @@ AI-RCI is built on a modern, scalable, and secure microservices architecture des
 
 ---
 
-## 🎯 Hackathon Summary (HackwithHyderabad 3.0)
+## 🎯 Event Summary (HackwithHyderabad 3.0)
 Hindsight Incident Agent bridges the critical gap between complex, distributed system failure symptoms and the actionable insights SREs need to fix them. By combining **state-of-the-art LLM reasoning (ReAct)**, **multi-source telemetry scraping**, and **Vectorize Hindsight persistent memory**, the platform delivers an enterprise-ready, self-healing diagnostic cockpit that dramatically cuts down MTTR from hours to under a second, learning continuously from every past outage.
