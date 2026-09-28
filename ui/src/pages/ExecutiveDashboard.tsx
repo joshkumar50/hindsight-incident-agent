@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { MemoryHitBadge } from "../components/MemoryHitBadge";
 import { useStore } from "../store/useStore";
+import { LiveIndicator } from "../components/LiveIndicator";
 
 /* ─── API shapes ─────────────────────────────────────────── */
 interface DashboardData {
@@ -138,14 +139,12 @@ export const ExecutiveDashboard = () => {
     {
       label: "AVAILABILITY",
       value: `${avail}%`,
-      delta: "+0.01%",
       positive: true,
       icon: <ShieldCheck size={12} className="text-slate-400" />,
     },
     {
       label: "MTTR",
       value: mttr > 0 ? `${mttr}s` : "—",
-      delta: "−2.1s vs last wk",
       positive: true,
       icon: <Clock size={12} className="text-slate-400" />,
     },
@@ -185,7 +184,7 @@ export const ExecutiveDashboard = () => {
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</span>
               </div>
               <p key={k.value} className="text-xl font-bold tabular-nums text-slate-900 leading-none animate-number-flip">{k.value}</p>
-              <p className={`text-[10px] font-medium ${k.positive ? "text-emerald-600" : "text-red-500"}`}>{k.delta}</p>
+              {k.delta && <p className={`text-[10px] font-medium ${k.positive ? "text-emerald-600" : "text-red-500"}`}>{k.delta}</p>}
             </div>
           ))}
         </div>
@@ -210,13 +209,7 @@ export const ExecutiveDashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-sm font-semibold">Active Incidents</CardTitle>
-                  <span className="flex items-center gap-1.5 text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                    </span>
-                    Monitoring Network
-                  </span>
+                  <LiveIndicator updatedAt={dash ? Date.now() : undefined} />
                 </div>
                 <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" onClick={() => navigate("/incidents")}>
                   View all
@@ -246,7 +239,7 @@ export const ExecutiveDashboard = () => {
                   </TableHeader>
                   <TableBody>
                     {incidents.map(inc => (
-                      <TableRow key={inc.id} className="cursor-pointer hover:bg-slate-50" onClick={() => setSelectedIncident(inc)}>
+                      <TableRow key={inc.id} className="cursor-pointer group hover:bg-slate-50 transition-colors" onClick={() => setSelectedIncident(inc)}>
                         <TableCell className="py-2.5">
                           <span className={`block w-2 h-2 rounded-full ${severityDot(inc.severity)}`} />
                         </TableCell>
@@ -260,7 +253,10 @@ export const ExecutiveDashboard = () => {
                           <Badge variant={statusVariant(inc.status)} className="text-[10px]">{inc.status}</Badge>
                         </TableCell>
                         <TableCell className="py-2.5">
-                          <span className="text-[11px] text-slate-400 tabular-nums">{timeAgo(inc.timestamp)}</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-slate-400 tabular-nums">{timeAgo(inc.timestamp)}</span>
+                            <ChevronRight className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-slate-400" size={14} />
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

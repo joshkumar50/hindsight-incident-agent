@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
-import { AlertTriangle, CheckCircle, Clock, RefreshCw, Flame, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, RefreshCw, Flame, Zap, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MemoryHitBadge } from '../components/MemoryHitBadge';
 import { useStore } from '../store/useStore';
+import { IncidentSheet } from '../components/IncidentSheet';
+import { LiveIndicator } from '../components/LiveIndicator';
 
 interface Incident {
   id: string; status: string; severity: string;
@@ -31,6 +33,8 @@ const severityDot = (severity: string) => {
 };
 
 export const IncidentCenter = () => {
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+
   const { data, isLoading, error, dataUpdatedAt } = useQuery<Incident[]>({
     queryKey: ['incidents'],
     queryFn: async () => { const res = await apiClient.get('/incidents'); return res.data; },
@@ -65,12 +69,7 @@ export const IncidentCenter = () => {
     <div className="space-y-4 max-w-5xl mx-auto animate-fade-in">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
-          {dataUpdatedAt
-            ? `Last checked ${new Date(dataUpdatedAt).toLocaleTimeString()}`
-            : 'Connecting...'}
-        </div>
+        <LiveIndicator updatedAt={dataUpdatedAt} />
         <div className="flex items-center gap-2">
           {activeIncidents.length > 0 ? (
             <Badge variant="destructive" className="gap-1.5 animate-pulse">
@@ -133,8 +132,9 @@ export const IncidentCenter = () => {
                 {incidents.map((incident, idx) => (
                   <TableRow
                     key={idx}
-                    className="cursor-pointer animate-fade-in transition-all duration-300 hover:shadow-sm hover:-translate-y-px"
+                    className="cursor-pointer group animate-fade-in transition-all duration-300 hover:shadow-sm hover:-translate-y-px hover:bg-slate-50"
                     style={{animationDelay: `${idx * 60}ms`}}
+                    onClick={() => setSelectedIncident(incident as any)}
                   >
                     <TableCell>
                       <span className={`block w-2 h-2 rounded-full ${severityDot(incident.severity)}`} />
@@ -176,14 +176,17 @@ export const IncidentCenter = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {incident.start_time && (
-                        <div className="flex items-center gap-1 text-slate-400">
-                          <Clock size={11} />
-                          <span className="font-num text-[11px]">
-                            {new Date(incident.start_time * 1000).toLocaleTimeString()}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-between">
+                        {incident.start_time && (
+                          <div className="flex items-center gap-1 text-slate-400">
+                            <Clock size={11} />
+                            <span className="font-num text-[11px]">
+                              {new Date(incident.start_time * 1000).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        )}
+                        <ChevronRight className="opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-slate-400" size={16} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -200,6 +203,8 @@ export const IncidentCenter = () => {
           ))}
         </div>
       )}
+
+      <IncidentSheet incident={selectedIncident as any} open={!!selectedIncident} onClose={() => setSelectedIncident(null)} />
     </div>
   );
 };

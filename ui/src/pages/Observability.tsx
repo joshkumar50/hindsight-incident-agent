@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
+import { LiveIndicator } from '../components/LiveIndicator';
 
 interface ServiceHealth {
   name: string; healthy: boolean; latency: number; uptime: string; error_rate?: number;
@@ -76,10 +77,7 @@ export const Observability = () => {
   return (
     <div className="space-y-4 max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
-          {dataUpdatedAt ? `Last updated ${new Date(dataUpdatedAt).toLocaleTimeString()}` : 'Connecting...'}
-        </div>
+        <LiveIndicator updatedAt={dataUpdatedAt} />
         <Badge variant="success" className="gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-soft" /> Live
         </Badge>

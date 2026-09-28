@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { useToast } from './Toast';
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/': { title: 'Executive Dashboard', subtitle: 'Real-time platform health and SRE metrics' },
@@ -18,8 +19,19 @@ export const Layout = () => {
   const location = useLocation();
   const page = pageTitles[location.pathname] || { title: 'Hindsight Incident Agent', subtitle: '' };
 
+  const { toasts, remove } = useToast();
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+        {toasts.map(t => (
+          <div key={t.id} onClick={() => remove(t.id)} className={`px-4 py-3 rounded-lg border shadow-lg pointer-events-auto cursor-pointer
+                                       bg-white animate-slide-in min-w-[280px]
+                                       ${t.type === 'success' ? 'border-emerald-200' : 'border-rose-200'}`}>
+            <p className="text-sm">{t.message}</p>
+          </div>
+        ))}
+      </div>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top header bar */}

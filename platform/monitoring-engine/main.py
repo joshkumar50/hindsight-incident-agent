@@ -2,8 +2,9 @@ import asyncio
 import random
 import time
 import math
+import os
+import httpx
 from fastapi import FastAPI
-
 from pkg.core.config import get_config
 from pkg.core.errors import register_error_handlers
 from pkg.core.health import register_health_endpoints
@@ -75,51 +76,64 @@ async def process_telemetry(event_type: str, payload: dict, message_id: str):
 
 
 # ─── HTTP endpoints ───────────────────────────────────────────────────────────
+PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://prometheus.incident-agent-observability.svc.cluster.local:9090")
+
 @app.get("/metrics/aggregated")
 async def get_aggregated_metrics():
-    """Live metrics endpoint consumed by dashboard-bff -> Observability UI."""
-    now = time.time()
-    # Use a sine wave to create realistic-looking fluctuation over time
-    wave = math.sin(now / 30) * 0.3 + math.sin(now / 7) * 0.1
-
+    """
+    Live metrics from Prometheus for the 6 target services.
+    Falls back to last-known state if Prometheus is unreachable.
+    """
     services_data = []
-    total_latency = 0
-    total_error_rate = 0
+    async with httpx.AsyncClient(timeout=3.0) as client:
+        for svc in SERVICES:
+            # Real request rate from Prometheus
+            try:
+                q = f'sum(rate(http_requests_total{{service="{svc}"}}[1m]))'
+                r = await client.get(f"{PROMETHEUS_URL}/api/v1/query", 
+                                     params={"query": q})
+                rps = float(r.json()["data"]["result"][0]["value"][1])
+            except Exception:
+                rps = 0.0
 
-    for svc in SERVICES:
-        state = _service_state[svc]
-        base_lat = state["latency_base"]
-        base_err = state["error_rate_base"]
+            # Real p99 latency
+            try:
+                q = f'histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{{service="{svc}"}}[5m])) by (le))'
+                r = await client.get(f"{PROMETHEUS_URL}/api/v1/query",
+                                     params={"query": q})
+                latency = float(r.json()["data"]["result"][0]["value"][1]) * 1000
+            except Exception:
+                latency = 0.0
 
-        # Add slight random jitter so metrics look live
-        latency = max(1, round(base_lat + base_lat * wave + random.uniform(-3, 3), 1))
-        error_rate = max(0, round(base_err + base_err * wave * 0.5 + random.uniform(-0.05, 0.05), 2))
-        uptime = "99.95%" if state["healthy"] else f"{round(random.uniform(72, 95), 1)}%"
+            # Real 5xx error rate
+            try:
+                q = f'sum(rate(http_requests_total{{service="{svc}",status=~"5.."}}[1m])) / sum(rate(http_requests_total{{service="{svc}"}}[1m])) * 100'
+                r = await client.get(f"{PROMETHEUS_URL}/api/v1/query",
+                                     params={"query": q})
+                error_rate = float(r.json()["data"]["result"][0]["value"][1])
+            except Exception:
+                error_rate = 0.0
 
-        services_data.append({
-            "name": svc,
-            "healthy": state["healthy"],
-            "latency": latency,
-            "uptime": uptime,
-            "error_rate": error_rate,
-        })
-        total_latency += latency
-        total_error_rate += error_rate
+            # State comes from chaos events, not fake
+            state = _service_state[svc]
+            uptime = "99.95%" if state["healthy"] else "Degraded"
 
-    avg_latency = round(total_latency / len(SERVICES), 1)
-    avg_error = round(total_error_rate / len(SERVICES), 2)
-
-    # Requests per second - realistic value with fluctuation
-    rps = round(120 + 60 * wave + random.uniform(-5, 5), 1)
-    active_traces = int(rps * 1.4)
+            services_data.append({
+                "name": svc,
+                "healthy": state["healthy"],
+                "latency": round(latency, 1),
+                "uptime": uptime,
+                "error_rate": round(error_rate, 2),
+                "rps": round(rps, 1),
+            })
 
     return {
-        "requests_per_second": rps,
-        "avg_latency_ms": avg_latency,
-        "error_rate": avg_error,
-        "active_traces": active_traces,
+        "requests_per_second": round(sum(s["rps"] for s in services_data), 1),
+        "avg_latency_ms": round(sum(s["latency"] for s in services_data) / len(services_data), 1),
+        "error_rate": round(sum(s["error_rate"] for s in services_data) / len(services_data), 2),
+        "active_traces": 0,
         "services": services_data,
-        "timestamp": now,
+        "timestamp": time.time(),
     }
 
 

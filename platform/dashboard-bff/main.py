@@ -360,45 +360,18 @@ async def get_cluster_info():
             "total_nodes": 0, "total_pods": 0, "namespaces": 0, "deployments": 0, "services": []
         }
 
-_fallback_memory = [
-    {
-        "incident_id": "INC-8192",
-        "symptoms": "High CPU utilization on auth-service",
-        "root_cause": "Hash calculation loop bug under concurrent load",
-        "playbook": ["Scale up auth-service replicas", "Rollback to previous stable image"],
-        "success_rate": 0.95,
-        "outcome": "success",
-        "human_approved": True
-    },
-    {
-        "incident_id": "INC-7731",
-        "symptoms": "500 errors from payment-service",
-        "root_cause": "Database connection pool exhaustion",
-        "playbook": ["Increase connection pool size to 50", "Restart payment-service pods"],
-        "success_rate": 0.88,
-        "outcome": "human_modified",
-        "human_approved": True
-    },
-    {
-        "incident_id": "INC-6542",
-        "symptoms": "Inventory service timeouts",
-        "root_cause": "Redis cache eviction policy causing thrashing",
-        "playbook": ["Change maxmemory-policy to allkeys-lru", "Flush Redis cache"],
-        "success_rate": 0.76,
-        "outcome": "success",
-        "human_approved": False
-    }
-]
-
-
 @app.get("/api/memory/bank")
 async def get_memory_bank():
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         try:
             resp = await client.get(f"{BACKEND_BASE_URL}/memory/bank")
-            return resp.json()
+            if resp.status_code == 200:
+                return resp.json()
+            return {"bank_id": "hindsight-incident-agent", 
+                    "total_memories": 0, "memories": []}
         except Exception as e:
-            logger.error(f"Failed to fetch from backend: {e}")
-            return {"bank_id": "error", "total_memories": 0, "memories": []}
+            logger.error(f"memory_bank_unreachable: {e}")
+            return {"bank_id": "hindsight-incident-agent",
+                    "total_memories": 0, "memories": []}
 
 
