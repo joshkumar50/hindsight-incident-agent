@@ -21,10 +21,10 @@
 | Jhansi Annapureddy | https://lnkd.in/p/gaUnyhg5 | [x] |
 
 ## Team Video
-- [ ] YouTube URL: PASTE_YOUTUBE_URL
-- [ ] Thumbnail 16:9 uploaded
-- [ ] Description includes repo + Hindsight links
-- [ ] Pinned comment links to Hindsight GitHub
+- [x] YouTube URL: https://youtu.be/QNSXqV_Riek?si=L00mJhyWmOFpInGA
+- [x] Thumbnail 16:9 uploaded
+- [x] Description includes repo + Hindsight links
+- [x] Pinned comment links to Hindsight GitHub
 
 ## Reddit Crosspost (bonus)
 - [ ] Posted to r/llmdevs or r/aiagents
