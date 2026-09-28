@@ -43,6 +43,41 @@ class EventBusClient:
         await self.client.ping()
         logger.info(f"Connected to EventBus at {self.redis_url}")
 
+        # Auto-create streams and consumer groups
+        stream_groups = [
+            ("incident_stream", "incident_group"),
+            ("recovery_stream", "incident_recovery_group"),
+            ("recovery_stream", "chaos_controller_group"),
+            ("recovery_stream", "recovery_engine_group"),
+            ("recovery_stream", "rollback_group"),
+            ("recovery_stream", "monitoring_recovery_group"),
+            ("recovery_stream", "validation_rec_group"),
+            ("dependency_stream", "dependency_group"),
+            ("anomaly_stream", "anomaly_group"),
+            ("telemetry_stream", "monitoring_group"),
+            ("ai_stream", "orchestrator_group"),
+            ("ai_stream", "execution_group"),
+            ("ai_stream", "validation_ai_group"),
+            ("chaos.stream", "chaos_engine_group"),
+            ("chaos.stream", "scenario_manager_group"),
+            ("chaos.stream", "monitoring_chaos_group"),
+            ("chaos.stream", "fault_injection_group_new"),
+            ("fault.stream", "fault_engine_group"),
+            ("audit_events", "audit_group"),
+            ("order_events", "notification_group"),
+            ("auth_events", "auth_group")
+        ]
+        
+        for stream, group in stream_groups:
+            try:
+                await self.client.xgroup_create(stream, group, id="$", mkstream=True)
+                logger.debug(f"Auto-created stream {stream} and group {group}")
+            except ResponseError as e:
+                if "BUSYGROUP" not in str(e):
+                    logger.warning(f"Error auto-creating group {group} for {stream}: {e}")
+            except Exception as e:
+                logger.warning(f"Unexpected error auto-creating group {group} for {stream}: {e}")
+
     async def _ensure_connected(self):
         """Reconnect if connection is lost, looping until successful."""
         while True:

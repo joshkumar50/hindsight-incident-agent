@@ -1,5 +1,11 @@
 import os
-BACKEND_BASE_URL = os.getenv("BACKEND_SERVICE_URL", "http://host.minikube.internal:8000")
+# BACKEND_BASE_URL = os.getenv("BACKEND_SERVICE_URL", "http://host.minikube.internal:8000")
+INCIDENT_ENGINE_URL = os.getenv("INCIDENT_ENGINE_URL", "http://incident-engine.incident-agent-system.svc.cluster.local")
+RECOVERY_SERVICE_URL = os.getenv("RECOVERY_SERVICE_URL", "http://recovery-validation-service.incident-agent-system.svc.cluster.local")
+AI_COPILOT_URL = os.getenv("AI_COPILOT_URL", "http://ai-copilot.incident-agent-system.svc.cluster.local")
+MONITORING_ENGINE_URL = os.getenv("MONITORING_ENGINE_URL", "http://monitoring-engine.incident-agent-system.svc.cluster.local")
+CHAOS_CONTROLLER_URL = os.getenv("CHAOS_CONTROLLER_URL", "http://chaos-controller.incident-agent-system.svc.cluster.local")
+AUDIT_ENGINE_URL = os.getenv("AUDIT_ENGINE_URL", "http://audit-engine.incident-agent-system.svc.cluster.local")
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -42,7 +48,7 @@ async def get_dashboard():
         # --- Incidents ---
         try:
             inc_resp = await client.get(
-                f"{BACKEND_BASE_URL}/incidents/active",
+                "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active",
                 timeout=TIMEOUT
             )
             all_incidents = inc_resp.json().get("incidents", [])
@@ -54,7 +60,7 @@ async def get_dashboard():
         # --- Recovery Metrics ---
         try:
             rec_resp = await client.get(
-                f"{BACKEND_BASE_URL}/metrics/mttr",
+                "http://recovery-validation-service.incident-agent-system.svc.cluster.local/metrics/mttr",
                 timeout=TIMEOUT
             )
             rec_data = rec_resp.json()
@@ -78,7 +84,7 @@ async def get_dashboard():
 
 @app.get("/api/incidents")
 async def get_incidents():
-    url = f"{BACKEND_BASE_URL}/incidents/active"
+    url = "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -96,7 +102,7 @@ ai_cache = {}
 
 @app.get("/api/ai")
 async def get_ai_analysis():
-    url = f"{BACKEND_BASE_URL}/incidents/active"
+    url = "http://incident-engine.incident-agent-system.svc.cluster.local/incidents/active"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -110,7 +116,7 @@ async def get_ai_analysis():
                 else:
                     try:
                         ai_resp = await client.post(
-                            f"{BACKEND_BASE_URL}/explain",
+                            "http://ai-copilot.incident-agent-system.svc.cluster.local/explain",
                             json={"incident_data": inc},
                             timeout=15.0
                         )
@@ -133,7 +139,7 @@ async def get_ai_analysis():
 
 @app.get("/api/recovery")
 async def get_recovery():
-    url = f"{BACKEND_BASE_URL}/metrics/mttr"
+    url = "http://recovery-validation-service.incident-agent-system.svc.cluster.local/metrics/mttr"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -149,7 +155,7 @@ async def get_recovery():
 
 @app.get("/api/observability")
 async def get_observability():
-    url = f"{BACKEND_BASE_URL}/metrics/aggregated"
+    url = "http://monitoring-engine.incident-agent-system.svc.cluster.local/metrics/aggregated"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -266,7 +272,7 @@ async def get_topology():
 
 @app.get("/api/chaos")
 async def get_chaos_status():
-    url = f"{BACKEND_BASE_URL}/status"
+    url = f"{CHAOS_CONTROLLER_URL}/status"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -283,7 +289,7 @@ class ChaosStartRequest(BaseModel):
 
 @app.post("/api/chaos/start")
 async def start_chaos(request: ChaosStartRequest):
-    url = f"{BACKEND_BASE_URL}/start"
+    url = f"{CHAOS_CONTROLLER_URL}/start"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=request.model_dump(), timeout=TIMEOUT)
@@ -295,7 +301,7 @@ async def start_chaos(request: ChaosStartRequest):
 
 @app.post("/api/chaos/stop/{experiment_id}")
 async def stop_chaos(experiment_id: str):
-    url = f"{BACKEND_BASE_URL}/stop/{experiment_id}"
+    url = f"{CHAOS_CONTROLLER_URL}/stop/{experiment_id}"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, timeout=TIMEOUT)
@@ -310,7 +316,7 @@ async def stop_chaos(experiment_id: str):
 
 @app.get("/api/audit")
 async def get_audit_logs():
-    url = f"{BACKEND_BASE_URL}/api/internal/logs"
+    url = "http://audit-engine.incident-agent-system.svc.cluster.local/api/internal/logs"
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, timeout=TIMEOUT)
@@ -364,7 +370,8 @@ async def get_cluster_info():
 async def get_memory_bank():
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         try:
-            resp = await client.get(f"{BACKEND_BASE_URL}/memory/bank")
+            backend_url = os.getenv("BACKEND_SERVICE_URL", "http://host.minikube.internal:8000")
+            resp = await client.get(f"{backend_url}/memory/bank")
             if resp.status_code == 200:
                 return resp.json()
             return {"bank_id": "hindsight-incident-agent", 

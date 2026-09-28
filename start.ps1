@@ -30,6 +30,11 @@ Step "Configuring Docker..."
 & minikube -p minikube docker-env | Invoke-Expression
 OK "Docker environment set"
 
+if (Test-Path "scripts/recover_streams.ps1") {
+    Step "Recovering Redis streams (self-healing)..."
+    .\scripts\recover_streams.ps1
+}
+
 # ?? 3. Build images (only changed layers rebuild automatically) ????????
 if (-not $SkipBuild) {
     Step "Building Docker images (Docker cache reused automatically)..."
@@ -124,8 +129,32 @@ OK "Port-forwards running with auto-restart watchdog"
 
 # ?? 7. Verify ??????????????????????????????????????????????????????????
 Step "Verifying endpoints..."
-$uiOK  = (Invoke-WebRequest -Uri "http://127.0.0.1:56115"               -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)
-$apiOK = (Invoke-WebRequest -Uri "http://localhost:58663/api/dashboard"  -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue)
+$uiOK  = $null
+$apiOK = $null
+$maxAttempts = 30
+$attempt = 1
+
+while ($attempt -le $maxAttempts -and (-not $uiOK -or -not $apiOK)) {
+    if (-not $uiOK) {
+        try {
+            $res = Invoke-WebRequest -Uri "http://127.0.0.1:56115" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+            if ($res.StatusCode -eq 200) { $uiOK = $res }
+        } catch {}
+    }
+    if (-not $apiOK) {
+        try {
+            $res = Invoke-WebRequest -Uri "http://localhost:58663/api/dashboard" -UseBasicParsing -TimeoutSec 3 -ErrorAction Stop
+            if ($res.StatusCode -eq 200) { $apiOK = $res }
+        } catch {}
+    }
+    if (-not $uiOK -or -not $apiOK) {
+        if (-not $uiOK)  { Write-Host "    Waiting for UI... (attempt $attempt/$maxAttempts)" -ForegroundColor Gray }
+        if (-not $apiOK) { Write-Host "    Waiting for API... (attempt $attempt/$maxAttempts)" -ForegroundColor Gray }
+        if ($attempt -lt $maxAttempts) { Start-Sleep 5 }
+        $attempt++
+    }
+}
+
 if ($uiOK)  { OK "UI  -> http://127.0.0.1:56115 (HTTP $($uiOK.StatusCode))" }  else { WARN "UI not responding yet - try refreshing in 10s" }
 if ($apiOK) { OK "API -> http://localhost:58663/api/dashboard (HTTP $($apiOK.StatusCode))" } else { WARN "API not responding yet" }
 

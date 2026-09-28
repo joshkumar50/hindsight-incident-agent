@@ -74,6 +74,12 @@ async def manage_incident(event_type: str, payload: dict, message_id: str):
             logger.info("incident_resolved", incident_id=incident_id)
             active_incidents[incident_id]["status"] = "resolved"
 
+    elif event_type == "RECOVERY_FAILED":
+        incident_id = payload.get("incident_id")
+        if incident_id in active_incidents:
+            logger.warning("incident_recovery_failed", incident_id=incident_id)
+            active_incidents[incident_id]["status"] = "escalated"
+
 async def run_consumer():
     await event_bus.connect()
     # Listen to both incident_stream (for creation) and recovery_stream (for resolution)
