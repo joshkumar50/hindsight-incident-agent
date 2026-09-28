@@ -31,7 +31,7 @@ const Metric = ({ label, value, icon: Icon, color, sub, chartData }: {
         <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</span>
       </div>
       <div className="relative z-10">
-        <p className="text-2xl font-bold font-num text-slate-900">{value}</p>
+        <p key={String(value)} className="text-2xl font-bold font-num text-slate-900 animate-number-flip">{value}</p>
         {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
       </div>
       {chartData && (
@@ -74,14 +74,14 @@ export const Observability = () => {
   const sparkData = React.useMemo(() => generateSparkline(), [dataUpdatedAt]); // Update on fetch
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto">
+    <div className="space-y-4 max-w-5xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <RefreshCw size={12} className={isLoading ? 'animate-spin' : ''} />
           {dataUpdatedAt ? `Last updated ${new Date(dataUpdatedAt).toLocaleTimeString()}` : 'Connecting...'}
         </div>
         <Badge variant="success" className="gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-soft" /> Live
         </Badge>
       </div>
 
@@ -129,7 +129,7 @@ export const Observability = () => {
               </TableHeader>
               <TableBody>
                 {data.services.map((svc, idx) => (
-                  <TableRow key={idx} className={!svc.healthy ? 'bg-red-50/40' : ''}>
+                  <TableRow key={idx} className={`transition-colors duration-150 hover:bg-slate-50/80 ${!svc.healthy ? 'bg-red-50/40' : ''}`}>
                     <TableCell className="font-id font-medium text-slate-800">{svc.name}</TableCell>
                     <TableCell>
                       {svc.healthy ? (

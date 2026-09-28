@@ -55,7 +55,7 @@ export const MemoryBank = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -110,8 +110,12 @@ export const MemoryBank = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((m) => (
-            <Card key={m.incident_id} className="hover:shadow-md transition-shadow">
+          {filtered.map((m, idx) => (
+            <Card
+              key={m.incident_id}
+              className="animate-fade-in hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+              style={{animationDelay: `${idx * 50}ms`}}
+            >
               <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                 <CardTitle className="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                   {m.incident_id}
@@ -142,7 +146,7 @@ export const MemoryBank = () => {
                   <div className="flex items-center gap-2">
                     <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-indigo-500 rounded-full"
+                        className="h-full bg-indigo-500 rounded-full animate-bar-grow"
                         style={{ width: `${m.success_rate * 100}%` }}
                       />
                     </div>

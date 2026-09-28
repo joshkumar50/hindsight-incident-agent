@@ -24,9 +24,16 @@ export const MemoryHitBadge: React.FC<MemoryHitBadgeProps> = ({ mode, durationSe
     : `${durationSeconds}s · ReAct loop · playbook retained to memory`;
 
   return (
-    <div className={`w-full flex items-center justify-between border rounded-lg px-4 py-3 ${containerClasses}`}>
+    <div className={`w-full flex items-center justify-between border rounded-lg px-4 py-3 animate-slide-in ${containerClasses}`}>
       <div className="flex items-center gap-3">
-        <Icon className={iconClasses} size={20} />
+        {isRecall ? (
+          <span className="relative">
+            <Icon className={iconClasses} size={20} />
+            <span className="absolute inset-0 rounded-full bg-violet-400/40 animate-ping" />
+          </span>
+        ) : (
+          <Icon className={iconClasses} size={20} />
+        )}
         <div className="flex flex-col">
           <span className={`text-xs font-semibold tracking-wider ${titleClasses}`}>
             {titleText}

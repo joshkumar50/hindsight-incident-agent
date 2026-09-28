@@ -56,3 +56,56 @@ body {
 
 /* Smooth transitions */
 * { transition-property: color, background-color, border-color, opacity, box-shadow, transform; transition-duration: 150ms; transition-timing-function: ease; }
+
+/* ─── Micro-animation keyframes ──────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+@keyframes ringPulse {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes numberFlip {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ─── Utility animation classes ──────────────────────────── */
+.animate-fade-in     { animation: fadeIn 0.35s ease-out both; }
+.animate-slide-in    { animation: slideInRight 0.35s ease-out both; }
+.animate-pulse-soft  { animation: pulseSoft 2s ease-in-out infinite; }
+.animate-number-flip { animation: numberFlip 0.3s ease-out; }
+.animate-bar-grow    { transform-origin: left; animation: barGrow 0.7s cubic-bezier(0.4,0,0.2,1) both; }
+
+.shimmer-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

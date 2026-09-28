@@ -62,7 +62,7 @@ export const IncidentCenter = () => {
   }, [incidents, setLastDiagnostic]);
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto">
+    <div className="space-y-4 max-w-5xl mx-auto animate-fade-in">
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -131,7 +131,11 @@ export const IncidentCenter = () => {
               </TableHeader>
               <TableBody>
                 {incidents.map((incident, idx) => (
-                  <TableRow key={idx} className="cursor-pointer">
+                  <TableRow
+                    key={idx}
+                    className="cursor-pointer animate-fade-in transition-all duration-300 hover:shadow-sm hover:-translate-y-px"
+                    style={{animationDelay: `${idx * 60}ms`}}
+                  >
                     <TableCell>
                       <span className={`block w-2 h-2 rounded-full ${severityDot(incident.severity)}`} />
                     </TableCell>
@@ -156,7 +160,15 @@ export const IncidentCenter = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(incident.status)}>{incident.status}</Badge>
+                      <Badge variant={statusVariant(incident.status)} className={incident.status === 'investigating' ? 'gap-1.5' : ''}>
+                        {incident.status === 'investigating' && (
+                          <span className="relative inline-flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
+                          </span>
+                        )}
+                        {incident.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant={incident.severity.toLowerCase() === 'high' || incident.severity.toLowerCase() === 'critical' ? 'destructive' : 'secondary'}>

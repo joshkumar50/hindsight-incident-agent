@@ -173,18 +173,18 @@ export const ExecutiveDashboard = () => {
   ];
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto">
+    <div className="space-y-4 max-w-6xl mx-auto animate-fade-in">
 
       {/* ── 1. KPI STRIP ──────────────────────────────────────── */}
       <Card>
         <div className="grid grid-cols-3 md:grid-cols-5 divide-x divide-slate-100">
           {kpis.map(k => (
-            <div key={k.label} className="px-4 py-3 flex flex-col gap-1">
+            <div key={k.label} className="px-4 py-3 flex flex-col gap-1 transition-all duration-300 hover:bg-slate-50/80 hover:shadow-sm">
               <div className="flex items-center gap-1">
                 {k.icon}
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</span>
               </div>
-              <p className="text-xl font-bold tabular-nums text-slate-900 leading-none">{k.value}</p>
+              <p key={k.value} className="text-xl font-bold tabular-nums text-slate-900 leading-none animate-number-flip">{k.value}</p>
               <p className={`text-[10px] font-medium ${k.positive ? "text-emerald-600" : "text-red-500"}`}>{k.delta}</p>
             </div>
           ))}
@@ -226,7 +226,10 @@ export const ExecutiveDashboard = () => {
             <CardContent className="p-0">
               {incidents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50/50">
-                  <CheckCircle2 size={24} className="text-emerald-400 mb-3" />
+                  <span className="relative inline-flex mb-3">
+                    <CheckCircle2 size={24} className="text-emerald-400 relative z-10" />
+                    <span className="absolute inset-0 rounded-full bg-emerald-300/50" style={{animation: 'ringPulse 1.8s ease-out infinite'}} />
+                  </span>
                   <p className="text-sm font-medium text-slate-700">Zero Active Incidents</p>
                   <p className="text-xs text-slate-400 mt-1">Platform is operating within normal parameters.</p>
                 </div>
@@ -304,7 +307,7 @@ export const ExecutiveDashboard = () => {
                       <div className="flex items-center gap-1.5 justify-end text-[10px] text-slate-400 font-mono">
                         {(m.success_rate * 100).toFixed(0)}% Conf
                         <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${(m.success_rate ?? 1) * 100}%` }} />
+                          <div className="h-full bg-indigo-500 rounded-full animate-bar-grow" style={{ width: `${(m.success_rate ?? 1) * 100}%` }} />
                         </div>
                       </div>
                     </div>
@@ -339,7 +342,7 @@ export const ExecutiveDashboard = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${row.status === 'Healthy' ? 'bg-emerald-500 w-full' : 'bg-amber-500 w-[95%]'}`} />
+                      <div className={`h-full rounded-full animate-bar-grow ${row.status === 'Healthy' ? 'bg-emerald-500 w-full' : 'bg-amber-500 w-[95%]'}`} />
                     </div>
                     <span className={`text-[10px] font-semibold uppercase tracking-wider ${row.status === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {row.status}
@@ -360,15 +363,15 @@ export const ExecutiveDashboard = () => {
             </CardHeader>
             <CardContent className="p-0 bg-slate-900 rounded-b-xl text-slate-300 text-xs font-mono">
               <div className="p-4 border-b border-slate-800 space-y-2">
-                <div className="flex justify-between"><span>CPU Allocation</span> <span className="text-white">42.1%</span></div>
+                <div className="flex justify-between"><span>CPU Allocation</span> <span key="42.1" className="text-white animate-number-flip">42.1%</span></div>
                 <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-400 rounded-full w-[42%]" />
+                  <div className="h-full bg-emerald-400 rounded-full w-[42%] animate-bar-grow" />
                 </div>
               </div>
               <div className="p-4 border-b border-slate-800 space-y-2">
-                <div className="flex justify-between"><span>Memory Usage</span> <span className="text-white">68.4%</span></div>
+                <div className="flex justify-between"><span>Memory Usage</span> <span key="68.4" className="text-white animate-number-flip">68.4%</span></div>
                 <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full w-[68%]" />
+                  <div className="h-full bg-amber-400 rounded-full w-[68%] animate-bar-grow" />
                 </div>
               </div>
               <div className="p-4 hover:bg-slate-800/50 transition-colors cursor-pointer flex items-center justify-between text-emerald-400" onClick={() => navigate("/audit")}>
