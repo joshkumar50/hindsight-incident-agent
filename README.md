@@ -5,6 +5,37 @@
 
 ---
 
+## 📢 Published Content
+
+**Demo Video**
+- [YouTube: Hindsight Incident Agent — Autonomous Kubernetes SRE Platform](https://youtu.be/QNSXqV_Riek)
+
+**Technical Articles**
+- [Taming LLM Hallucinations in Kubernetes Incident Response — Josh Kumar](https://dev.to/joshkumar50/taming-llm-hallucinations-in-kubernetes-incident-response-249j)
+- [Bypassing Slow Generative AI Loops with Semantic Memory — Kondaveeti Sai Sri](PASTE_SAI_SRI_DEVTO_URL)
+- [Automating Kubernetes Remediation Workflows Without Human Intervention — Hema Sankar Reddy Gade](https://dev.to/hema_shankar_d1e0db2ee96f/automating-kubernetes-remediation-workflows-without-human-intervention-pg8)
+- [Building a Multi-Provider Fallback Router for Resilient AI Agents — Tanu Sri](https://dev.to/tanu_sri_5ec6f2091129bc46/building-a-multi-provider-fallback-router-for-resilient-ai-agents-50e0)
+- [Rendering Complex AI Reasoning States in a React Dashboard — Ramyasri Gade](https://dev.to/ramyasri_gade_e3a15d0d31c/rendering-complex-ai-reasoning-states-in-a-react-dashboard-32mk)
+- [Designing an Immutable Audit Trail for Autonomous Agents — Jhansi Annapureddy](https://dev.to/jhansi_annapureddy_b2bbbc/designing-an-immutable-audit-trail-for-autonomous-agents-55i4)
+
+**LinkedIn Posts**
+- [Josh Kumar](https://lnkd.in/p/dPq_3Y2f)
+- [Kondaveeti Sai Sri](PASTE_SAI_SRI_LINKEDIN_URL)
+- [Hema Sankar Reddy Gade](https://lnkd.in/p/dRdJUmGX)
+- [Tanu Sri](https://lnkd.in/p/gCNSw_C7)
+- [Ramyasri Gade](https://lnkd.in/p/dBQSMu6t)
+- [Jhansi Annapureddy](https://lnkd.in/p/gaUnyhg5)
+
+---
+
+## 🏗️ Architecture
+
+![Hindsight Incident Agent Architecture](docs/assets/architecture.png)
+
+The platform runs 17 microservices on Kubernetes, decoupled through Redis Streams. The control plane is isolated from the application plane with NetworkPolicies. Only the recovery engine has permission to mutate Kubernetes resources, enforced through least-privilege RBAC. Telemetry flows through OpenTelemetry to Prometheus, Loki, and Jaeger.
+
+---
+
 ## 🌍 Domain & Problem Statement
 
 **The Real Business Problem:** 
