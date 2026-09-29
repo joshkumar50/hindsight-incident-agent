@@ -25,7 +25,7 @@ register_health_endpoints(app, "knowledge-engine")
 # ---------------------------------------------------------------------------
 _HINDSIGHT_API_KEY = os.getenv("HINDSIGHT_API_KEY")
 _HINDSIGHT_BASE_URL = os.getenv(
-    "HINDSIGHT_BASE_URL", "https://memory.hindsight.vectorize.io"
+    "HINDSIGHT_BASE_URL", "https://api.hindsight.vectorize.io"
 )
 
 HINDSIGHT_ENABLED: bool = False

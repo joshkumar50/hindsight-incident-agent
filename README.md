@@ -5,6 +5,11 @@
 
 ---
 
+## 🎬 Demonstration
+
+![Hindsight Incident Agent Demo](docs/assets/demo.gif)
+
+---
 ## 📢 Published Content
 
 **Demo Video**
@@ -161,7 +166,7 @@ Hindsight memory is the core judging criterion (25% of score) and is implemented
 
 ```bash
 HINDSIGHT_API_KEY=<your-key>          # Required — disables memory if missing (logged, not crashed)
-HINDSIGHT_BASE_URL=https://memory.hindsight.vectorize.io  # Optional, defaults to this value
+HINDSIGHT_BASE_URL=https://api.hindsight.vectorize.io  # Optional, defaults to this value
 ```
 
 ### Knowledge Engine endpoints
