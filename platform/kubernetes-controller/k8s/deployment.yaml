@@ -24,16 +24,16 @@ spec:
       serviceAccountName: recovery-engine-sa  # Ensures they have K8s API rights if needed
       containers:
       - name: kubernetes-controller
-        image: hindsight_agent-kubernetes-controller:latest
+        image: hindsight-agent-kubernetes-controller:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: kubernetes-controller-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

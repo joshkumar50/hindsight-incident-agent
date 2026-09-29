@@ -10,7 +10,7 @@
     { "name": "Jhansi Annapureddy", "email": "annapureddyjhansi2@gmail.com" }
   ],
   "repo_url": "https://github.com/joshkumar50/hindsight-incident-agent",
-  "video_url": "https://youtu.be/QNSXqV_Riek?si=L00mJhyWmOFpInGA",
+  "video_url": "https://youtu.be/QNSXqV_Riek",
   "articles": [
     { "member": "Josh Kumar", "url": "https://dev.to/joshkumar50/taming-llm-hallucinations-in-kubernetes-incident-response-249j" },
     { "member": "Kondaveeti Sai Sri", "url": "https://medium.com/@saisrikondaveeti/title-bypassing-slow-generative-ai-loops-with-semantic-memory-published-false-description-how-4acd13c26e4b" },

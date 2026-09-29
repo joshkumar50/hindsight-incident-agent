@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import logging
 from fastapi import FastAPI
 from kubernetes import client, config

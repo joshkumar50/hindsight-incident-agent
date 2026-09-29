@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: chaos-controller
-        image: hindsight_agent-chaos-controller:latest
+        image: hindsight-agent-chaos-controller:latest
         imagePullPolicy: Never
         securityContext:
           runAsNonRoot: true
@@ -29,9 +29,9 @@ spec:
         - containerPort: 8000
         envFrom:
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /health

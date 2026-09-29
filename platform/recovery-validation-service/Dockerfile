@@ -1,4 +1,4 @@
-FROM hindsight_agent-python-base:latest
+FROM hindsight-agent-python-base:latest
 ARG dir
 
 COPY requirements.txt .

@@ -21,7 +21,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.t
 FROM python:3.11-slim
 
 # Create a non-root user
-RUN adduser --disabled-password --gecos "" hindsight_agentuser
+RUN adduser --disabled-password --gecos "" hindsight-agentuser
 
 WORKDIR /app
 
@@ -35,4 +35,4 @@ COPY --from=builder /app/wheels /wheels
 RUN pip install --no-cache /wheels/* && rm -rf /wheels
 
 # Define the shared entrypoint behavior that derived images will use
-USER hindsight_agentuser
+USER hindsight-agentuser

@@ -1,4 +1,4 @@
-﻿import httpx
+import httpx
 from fastapi import FastAPI, Header
 from pydantic import BaseModel
 

@@ -38,9 +38,9 @@ if (Test-Path "scripts/recover_streams.ps1") {
 # ?? 3. Build images (only changed layers rebuild automatically) ????????
 if (-not $SkipBuild) {
     Step "Building Docker images (Docker cache reused automatically)..."
-    Write-Host "    Building hindsight_agent-python-base:latest..." -ForegroundColor Gray
-    if ($Rebuild) { docker build --no-cache -f scripts/Dockerfile.python.base -t hindsight_agent-python-base:latest . 2>&1 | Out-Null }
-    else          { docker build             -f scripts/Dockerfile.python.base -t hindsight_agent-python-base:latest . 2>&1 | Out-Null }
+    Write-Host "    Building hindsight-agent-python-base:latest..." -ForegroundColor Gray
+    if ($Rebuild) { docker build --no-cache -f scripts/Dockerfile.python.base -t hindsight-agent-python-base:latest . 2>&1 | Out-Null }
+    else          { docker build             -f scripts/Dockerfile.python.base -t hindsight-agent-python-base:latest . 2>&1 | Out-Null }
     
     $images = @(
         @{ tag="hindsight-agent/dashboard-bff:latest";    df="platform/dashboard-bff/Dockerfile";    arg="platform/dashboard-bff" },

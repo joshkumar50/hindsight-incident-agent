@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: telemetry-collector
-        image: hindsight_agent-telemetry-collector:latest
+        image: hindsight-agent-telemetry-collector:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: telemetry-collector-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

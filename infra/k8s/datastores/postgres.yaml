@@ -34,29 +34,29 @@ spec:
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: hindsight_agent-secrets
+              name: hindsight-agent-secrets
               key: postgres_user
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: hindsight_agent-secrets
+              name: hindsight-agent-secrets
               key: postgres_password
         - name: POSTGRES_DB
           valueFrom:
             configMapKeyRef:
-              name: hindsight_agent-global-config
+              name: hindsight-agent-global-config
               key: POSTGRES_DB
         volumeMounts:
         - name: pgdata
           mountPath: /var/lib/postgresql/data
         livenessProbe:
           exec:
-            command: ["pg_isready", "-U", "hindsight_agent", "-d", "incident_agent_db"]
+            command: ["pg_isready", "-U", "hindsight-agent", "-d", "incident_agent_db"]
           initialDelaySeconds: 15
           periodSeconds: 10
         readinessProbe:
           exec:
-            command: ["pg_isready", "-U", "hindsight_agent", "-d", "incident_agent_db"]
+            command: ["pg_isready", "-U", "hindsight-agent", "-d", "incident_agent_db"]
           initialDelaySeconds: 5
           periodSeconds: 5
       volumes:

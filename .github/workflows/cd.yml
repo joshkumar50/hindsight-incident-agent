@@ -15,6 +15,6 @@ jobs:
         echo "Pushing images to enterprise registry..."
     - name: Helm Package
       run: |
-        helm package infra/helm/hindsight_agent
+        helm package infra/helm/hindsight-agent
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

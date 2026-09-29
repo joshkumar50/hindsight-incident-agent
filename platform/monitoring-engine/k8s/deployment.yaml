@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: monitoring-engine
-        image: hindsight_agent-monitoring-engine:latest
+        image: hindsight-agent-monitoring-engine:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: monitoring-engine-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

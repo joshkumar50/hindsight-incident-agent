@@ -10,9 +10,10 @@ pydantic==2.4.2
 pydantic-settings==2.0.3
 pytest==7.4.2
 pytest-asyncio==0.21.1
-qdrant-client==1.6.0
+
 redis==5.0.1
 structlog==23.1.0
 uvicorn==0.23.2
 psycopg2-binary
 asyncpg
+hindsight-client

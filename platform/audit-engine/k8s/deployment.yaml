@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: audit-engine
-        image: hindsight_agent-audit-engine:latest
+        image: hindsight-agent-audit-engine:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: audit-engine-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

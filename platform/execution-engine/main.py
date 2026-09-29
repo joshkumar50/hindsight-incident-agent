@@ -59,7 +59,13 @@ async def execute_recovery(event_type: str, payload: dict, message_id: str):
                     k8s_res.raise_for_status()
                     logger.info("k8s_execution_complete", incident_id=incident_id)
                 except Exception as e:
-                    logger.warning("K8s API patch failed locally, simulating success for demo", incident_id=incident_id, error=str(e))
+                    logger.error("k8s_execution_failed", incident_id=incident_id, error=str(e))
+                    await event_bus.publish(
+                        "recovery_stream",
+                        "RECOVERY_FAILED",
+                        {"incident_id": incident_id, "target": target, "error": str(e), "stage": "k8s_patch"},
+                    )
+                    return
 
                 # 3. Verify Recovery (Optional / non-blocking for demo)
                 try:
@@ -74,7 +80,7 @@ async def execute_recovery(event_type: str, payload: dict, message_id: str):
                 await event_bus.publish(
                     "recovery_stream",
                     "RECOVERY_COMPLETED",
-                    {"incident_id": incident_id, "target": target, "simulated": True},
+                    {"incident_id": incident_id, "target": target},
                 )
 
             except Exception as e:
@@ -86,11 +92,11 @@ async def execute_recovery(event_type: str, payload: dict, message_id: str):
                     error=str(e),
                     traceback=_tb.format_exc()[-1000:],
                 )
-                logger.info("falling_back_to_simulated_recovery", incident_id=incident_id)
+                logger.error("recovery_failed", incident_id=incident_id)
                 await event_bus.publish(
                     "recovery_stream",
-                    "RECOVERY_COMPLETED",
-                    {"incident_id": incident_id, "target": target, "simulated": True},
+                    "RECOVERY_FAILED",
+                    {"incident_id": incident_id, "target": target, "error": str(e)},
                 )
 
 

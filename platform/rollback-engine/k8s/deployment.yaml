@@ -24,16 +24,16 @@ spec:
       serviceAccountName: recovery-engine-sa  # Ensures they have K8s API rights if needed
       containers:
       - name: rollback-engine
-        image: hindsight_agent-rollback-engine:latest
+        image: hindsight-agent-rollback-engine:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: rollback-engine-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

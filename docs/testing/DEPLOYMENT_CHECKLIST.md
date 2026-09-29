@@ -3,7 +3,7 @@
 ## Pre-Flight
 - [ ] Ensure K8s cluster has Calico or Cilium CNI installed for NetworkPolicies.
 - [ ] Provision highly available Redis and PostgreSQL instances outside the cluster if possible.
-- [ ] Inject `JWT_SECRET` and AI Provider API Keys into the `hindsight_agent-secrets` Vault.
+- [ ] Inject `JWT_SECRET` and AI Provider API Keys into the `hindsight-agent-secrets` Vault.
 
 ## Deployment Phase
 - [ ] `kubectl apply -f infra/k8s/namespaces.yaml`

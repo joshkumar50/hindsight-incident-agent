@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: inventory-service-config
@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: inventory-service
-        image: hindsight_agent-inventory-service:latest
+        image: hindsight-agent-inventory-service:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: inventory-service-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

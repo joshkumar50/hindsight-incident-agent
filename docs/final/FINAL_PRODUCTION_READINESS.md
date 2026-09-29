@@ -2,7 +2,7 @@
 
 ## 1. Deployment & Scalability
 - **Status**: [READY]
-- **Details**: The entire platform is parameterized via Helm (`infra/helm/hindsight_agent`). All services use ClusterIPs, bounded resource limits, and replica configurations suitable for horizontal pod autoscaling.
+- **Details**: The entire platform is parameterized via Helm (`infra/helm/hindsight-agent`). All services use ClusterIPs, bounded resource limits, and replica configurations suitable for horizontal pod autoscaling.
 
 ## 2. Fault Tolerance & Recoverability
 - **Status**: [READY]

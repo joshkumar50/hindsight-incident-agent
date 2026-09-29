@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: recovery-planning-engine
-        image: hindsight_agent-recovery-planning-engine:latest
+        image: hindsight-agent-recovery-planning-engine:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: recovery-planning-engine-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

@@ -8,7 +8,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: hindsight_agent-recovery-role
+  name: hindsight-agent-recovery-role
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -20,12 +20,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: hindsight_agent-recovery-binding
+  name: hindsight-agent-recovery-binding
 subjects:
 - kind: ServiceAccount
   name: recovery-engine-sa
   namespace: incident-agent-system
 roleRef:
   kind: ClusterRole
-  name: hindsight_agent-recovery-role
+  name: hindsight-agent-recovery-role
   apiGroup: rbac.authorization.k8s.io

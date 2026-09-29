@@ -17,7 +17,7 @@ Synchronous HTTP is only used in the target `apps/` microservice data plane.
 ## 4. Databases
 - PostgreSQL: Relational storage (Audit, Incident tracking)
 - Redis: Event Bus, DLQ, and Caching
-- Qdrant: Vector embedding of resolved incident post-mortems
+- Hindsight: Persistent memory of resolved incident post-mortems
 
 ## 5. Security & Infrastructure
 Deployed natively to Kubernetes. Uses strict RBAC (only `recovery-engine` can mutate K8s resources). Uses JWT for service-to-service auth in the data plane.

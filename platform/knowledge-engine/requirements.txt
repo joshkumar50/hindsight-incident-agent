@@ -12,4 +12,5 @@ redis
 httpx
 pytest
 pytest-asyncio
-qdrant-client
+
+hindsight-client

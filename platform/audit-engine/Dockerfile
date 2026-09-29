@@ -1,4 +1,4 @@
-FROM hindsight_agent-python-base:latest
+FROM hindsight-agent-python-base:latest
 ARG SERVICE_NAME
 ARG dir
 ENV SERVICE_NAME=${SERVICE_NAME}

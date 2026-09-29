@@ -1,4 +1,4 @@
-﻿# DEV-ONLY: Secrets defined as plaintext here for local Minikube dev.
+# DEV-ONLY: Secrets defined as plaintext here for local Minikube dev.
 # In production, use External Secrets Operator or sealed secrets.
 # All values must be overridden via --set or a production values.yaml.
 apiVersion: v1
@@ -10,6 +10,7 @@ stringData:
   jwt-secret: "hindsight-agent_super_secret_enterprise_key_2026"
   postgres-password: "incident_agent_secret"
   postgres-user: "hindsight_user"
+  HINDSIGHT_API_KEY: "dummy-key-for-now"
 type: Opaque
 ---
 apiVersion: v1
@@ -21,4 +22,5 @@ stringData:
   jwt-secret: "hindsight-agent_super_secret_enterprise_key_2026"
   postgres-password: "incident_agent_secret"
   postgres-user: "hindsight_user"
+  HINDSIGHT_API_KEY: "dummy-key-for-now"
 type: Opaque

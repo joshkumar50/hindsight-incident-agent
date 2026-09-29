@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: payment-service-config
@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: payment-service
-        image: hindsight_agent-payment-service:latest
+        image: hindsight-agent-payment-service:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: payment-service-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

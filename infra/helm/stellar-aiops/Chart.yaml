@@ -1,5 +1,5 @@
 apiVersion: v2
-name: hindsight_agent-aiops
+name: hindsight-agent-aiops
 description: A Helm chart for Hindsight Incident Agent — Autonomous SRE Platform Autonomous Kubernetes SRE Platform
 type: application
 version: 0.1.0

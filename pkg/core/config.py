@@ -21,7 +21,7 @@ class AppConfig(BaseSettings):
     # PostgreSQL configuration
     postgres_host: str = Field(default="postgres-db.incident-agent-system.svc.cluster.local")
     postgres_port: int = Field(default=5432, ge=1, le=65535)
-    postgres_user: str = Field(default="hindsight_agent")
+    postgres_user: str = Field(default="hindsight-agent")
     # No default for passwords in production! Fails if missing in ENV.
     postgres_password: str = Field(...)
     postgres_db: str = Field(default="incident_agent_db")

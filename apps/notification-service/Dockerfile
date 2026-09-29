@@ -1,4 +1,4 @@
-FROM hindsight_agent-python-base:latest
+FROM hindsight-agent-python-base:latest
 
 # Set service name via build arg
 ARG SERVICE_NAME

@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 from pkg.core.config import get_config

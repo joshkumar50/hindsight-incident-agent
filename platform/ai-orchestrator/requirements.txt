@@ -12,3 +12,4 @@ redis
 httpx
 pytest
 pytest-asyncio
+hindsight-client

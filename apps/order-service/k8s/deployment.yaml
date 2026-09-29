@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: order-service-config
@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: hindsight_agent-order-service:latest
+        image: hindsight-agent-order-service:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: order-service-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

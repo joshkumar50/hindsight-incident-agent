@@ -1,8 +1,8 @@
-# Default values for hindsight_agent-aiops.
+# Default values for hindsight-agent-aiops.
 
 global:
   environment: production
-  domain: hindsight_agent-aiops.local
+  domain: hindsight-agent-aiops.local
 
 observability:
   prometheus:
@@ -19,7 +19,7 @@ databases:
     enabled: true
   redis:
     enabled: true
-  qdrant:
+  hindsight:
     enabled: true
 
 apps:

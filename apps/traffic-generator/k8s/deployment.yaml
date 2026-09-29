@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: traffic-generator-config
@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: traffic-generator
-        image: hindsight_agent-traffic-generator:latest
+        image: hindsight-agent-traffic-generator:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: traffic-generator-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

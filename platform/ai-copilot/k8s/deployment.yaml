@@ -23,16 +23,16 @@ spec:
     spec:
       containers:
       - name: ai-copilot
-        image: hindsight_agent-ai-copilot:latest
+        image: hindsight-agent-ai-copilot:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
             name: ai-copilot-config
         - configMapRef:
-            name: hindsight_agent-global-config
+            name: hindsight-agent-global-config
         - secretRef:
-            name: hindsight_agent-secrets
+            name: hindsight-agent-secrets
         livenessProbe:
           httpGet:
             path: /liveness

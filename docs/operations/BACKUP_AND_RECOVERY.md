@@ -4,4 +4,4 @@
 ## Redis
 - AOF persistence enabled.
 ## Helm Rollback
-- Run `helm rollback hindsight_agent` in case of failed deployment.
+- Run `helm rollback hindsight-agent` in case of failed deployment.
