@@ -13,7 +13,7 @@
   "video_url": "https://youtu.be/QNSXqV_Riek?si=L00mJhyWmOFpInGA",
   "articles": [
     { "member": "Josh Kumar", "url": "https://dev.to/joshkumar50/taming-llm-hallucinations-in-kubernetes-incident-response-249j" },
-    { "member": "Kondaveeti Sai Sri", "url": "PASTE_SAI_SRI_DEVTO_URL" },
+    { "member": "Kondaveeti Sai Sri", "url": "https://medium.com/@saisrikondaveeti/title-bypassing-slow-generative-ai-loops-with-semantic-memory-published-false-description-how-4acd13c26e4b" },
     { "member": "Hema Sankar Reddy Gade", "url": "https://dev.to/hema_shankar_d1e0db2ee96f/automating-kubernetes-remediation-workflows-without-human-intervention-pg8" },
     { "member": "Tanu Sri", "url": "https://dev.to/tanu_sri_5ec6f2091129bc46/building-a-multi-provider-fallback-router-for-resilient-ai-agents-50e0" },
     { "member": "Ramyasri Gade", "url": "https://dev.to/ramyasri_gade_e3a15d0d31c/rendering-complex-ai-reasoning-states-in-a-react-dashboard-32mk" },
