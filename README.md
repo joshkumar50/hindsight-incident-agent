@@ -20,7 +20,7 @@
 
 **LinkedIn Posts**
 - [Josh Kumar](https://lnkd.in/p/dPq_3Y2f)
-- [Kondaveeti Sai Sri](PASTE_SAI_SRI_LINKEDIN_URL)
+- [Kondaveeti Sai Sri](https://lnkd.in/p/gMiA_FM9)
 - [Hema Sankar Reddy Gade](https://lnkd.in/p/dRdJUmGX)
 - [Tanu Sri](https://lnkd.in/p/gCNSw_C7)
 - [Ramyasri Gade](https://lnkd.in/p/dBQSMu6t)

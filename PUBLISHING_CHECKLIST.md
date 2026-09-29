@@ -14,7 +14,7 @@
 | Member | URL | Status |
 |---|---|---|
 | Josh Kumar | https://lnkd.in/p/dPq_3Y2f | [x] |
-| Kondaveeti Sai Sri | [ ] | |
+| Kondaveeti Sai Sri | https://lnkd.in/p/gMiA_FM9 | [x] |
 | Hema Sankar Reddy Gade | https://lnkd.in/p/dRdJUmGX | [x] |
 | Tanu Sri | https://lnkd.in/p/gCNSw_C7 | [x] |
 | Ramyasri Gade | https://lnkd.in/p/dBQSMu6t | [x] |
