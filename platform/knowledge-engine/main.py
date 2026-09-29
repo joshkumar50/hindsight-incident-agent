@@ -74,15 +74,30 @@ async def search_history(query: SearchQuery):
         return {"historical_matches": []}
 
     try:
-        results = hindsight.recall(
+        results = await hindsight.arecall(
             bank_id=_HINDSIGHT_BANK_ID,
             query=query.root_cause,
         )
+        def _extract_score(s) -> float:
+            if s is None:
+                return 0.0
+            if isinstance(s, dict):
+                return float(s.get("final") or s.get("similarity") or 0.0)
+            return float(getattr(s, "final", 0.0) or 0.0)
+
+        matches = []
+        for item in results.results:
+            score = _extract_score(item.scores)
+            matches.append({
+                "document_id": getattr(item, "document_id", None),
+                "text": item.text,
+                "score": score,
+                "metadata": item.metadata or {},
+            })
+        return {"historical_matches": matches}
     except Exception as e:
         logger.error("hindsight_recall_failed", error=str(e))
         return {"historical_matches": []}
-
-    return {"historical_matches": results}
 
 
 @app.post("/retain")
@@ -97,7 +112,7 @@ async def retain_history(data: RetainQuery):
         return {"status": "skipped", "reason": "HINDSIGHT_API_KEY not configured"}
 
     try:
-        hindsight.retain(
+        await hindsight.aretain(
             bank_id=_HINDSIGHT_BANK_ID,
             content=f"Incident {data.incident_id} was resolved by: {data.resolution}",
         )

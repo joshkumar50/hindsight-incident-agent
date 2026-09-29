@@ -25,8 +25,8 @@ event_bus = EventBusClient(f"redis://{config.redis_host}:{config.redis_port}")
 # Hindsight SDK initialisation
 # Signatures verified in PHASE1_SDK.md from hindsight-client==0.10.1:
 #   Hindsight(base_url: str, api_key: str | None = None, ...)
-#   recall(bank_id: str, query: str, ...) -> RecallResponse
-#   retain(bank_id: str, content: str | list[dict], ...) -> RetainResponse
+#   arecall(bank_id: str, query: str, ...) -> RecallResponse
+#   aretain(bank_id: str, content: str | list[dict], ...) -> RetainResponse
 # ---------------------------------------------------------------------------
 _HINDSIGHT_API_KEY = os.getenv("HINDSIGHT_API_KEY")
 _HINDSIGHT_BASE_URL = os.getenv(
@@ -71,50 +71,60 @@ async def coordinate_ai_workflow(event_type: str, payload: dict, message_id: str
         # -----------------------------------------------------------------------
         if HINDSIGHT_ENABLED:
             try:
-                memory_results = hindsight.recall(
+                memory_results = await hindsight.arecall(
                     bank_id=_HINDSIGHT_BANK_ID,
                     query=incident_description,
                 )
-                if memory_results and len(memory_results) > 0:
-                    top = memory_results[0]
-                    top_score = getattr(top, "score", 0.0) or 0.0
-                    if top_score >= _MEMORY_HIT_THRESHOLD:
-                        # High-confidence memory hit — short-circuit full pipeline
-                        logger.info(
-                            "memory_hit_short_circuit",
-                            incident_id=incident_id,
-                            score=top_score,
-                        )
-                        memory_content = getattr(top, "content", str(top))
+                
+                def _extract_score(s) -> float:
+                    if s is None:
+                        return 0.0
+                    if isinstance(s, dict):
+                        return float(s.get("final") or s.get("similarity") or 0.0)
+                    return float(getattr(s, "final", 0.0) or 0.0)
 
-                        await event_bus.publish(
-                            "ai_stream",
-                            "RECOVERY_PLAN_READY",
-                            {
-                                "incident_id": incident_id,
-                                "memory_hit": True,
-                                "rca": memory_content,
-                                "plan": memory_content,
-                            },
-                        )
-                        await event_bus.publish(
-                            "audit_events",
-                            "AUTONOMOUS_DECISION",
-                            {
-                                "incident_id": incident_id,
-                                "event_type": "AUTONOMOUS_DECISION",
-                                "decision": "MEMORY_RECALL",
-                                "confidence_score": top_score,
-                                "human_approved": False,
-                                "model_name": "hindsight",
-                                "rca": memory_content,
-                            },
-                        )
-                        logger.info(
-                            "orchestration_complete_via_memory",
-                            incident_id=incident_id,
-                        )
-                        return  # <-- short-circuit: no LLM pipeline needed
+                top_score = 0.0
+                top_item = None
+                if memory_results.results:
+                    top_item = memory_results.results[0]
+                    top_score = _extract_score(top_item.scores)
+
+                if top_item is not None and top_score >= _MEMORY_HIT_THRESHOLD:
+                    # High-confidence memory hit — short-circuit full pipeline
+                    logger.info(
+                        "memory_hit_short_circuit",
+                        incident_id=incident_id,
+                        score=top_score,
+                    )
+                    
+                    await event_bus.publish(
+                        "ai_stream",
+                        "RECOVERY_PLAN_READY",
+                        {
+                            "incident_id": incident_id,
+                            "memory_hit": True,
+                            "rca": top_item.text,
+                            "plan": top_item.text,
+                        },
+                    )
+                    await event_bus.publish(
+                        "audit_events",
+                        "AUTONOMOUS_DECISION",
+                        {
+                            "incident_id": incident_id,
+                            "event_type": "AUTONOMOUS_DECISION",
+                            "decision": "MEMORY_RECALL",
+                            "confidence_score": top_score,
+                            "human_approved": False,
+                            "model_name": "hindsight",
+                            "rca": top_item.text,
+                        },
+                    )
+                    logger.info(
+                        "orchestration_complete_via_memory",
+                        incident_id=incident_id,
+                    )
+                    return  # <-- short-circuit: no LLM pipeline needed
             except Exception as _recall_err:
                 # Recall failure must NOT block the normal pipeline
                 logger.warning(
@@ -190,7 +200,7 @@ async def coordinate_ai_workflow(event_type: str, payload: dict, message_id: str
                 # ---------------------------------------------------------------
                 if HINDSIGHT_ENABLED:
                     try:
-                        hindsight.retain(
+                        await hindsight.aretain(
                             bank_id=_HINDSIGHT_BANK_ID,
                             content=(
                                 f"Incident {incident_id} resolved. "

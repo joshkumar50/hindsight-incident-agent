@@ -10,7 +10,8 @@ stringData:
   jwt-secret: "hindsight-agent_super_secret_enterprise_key_2026"
   postgres-password: "incident_agent_secret"
   postgres-user: "hindsight_user"
-  HINDSIGHT_API_KEY: "dummy-key-for-now"
+  HINDSIGHT_BASE_URL: "https://api.hindsight.vectorize.io"
+  HINDSIGHT_API_KEY: "REPLACE_AT_DEPLOY_TIME"
 type: Opaque
 ---
 apiVersion: v1
@@ -22,5 +23,6 @@ stringData:
   jwt-secret: "hindsight-agent_super_secret_enterprise_key_2026"
   postgres-password: "incident_agent_secret"
   postgres-user: "hindsight_user"
-  HINDSIGHT_API_KEY: "dummy-key-for-now"
+  HINDSIGHT_BASE_URL: "https://api.hindsight.vectorize.io"
+  HINDSIGHT_API_KEY: "REPLACE_AT_DEPLOY_TIME"
 type: Opaque
